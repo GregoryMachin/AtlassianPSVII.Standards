@@ -260,7 +260,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         }
     }
 
-    It 'continuous release workflow keeps release logic in build tasks and gates publishing safely' {
+    It 'continuous release verifies and publishes the exact attested CI artifact' {
         $workflowPath = Join-Path -Path $projectRoot -ChildPath '.github/workflows/continuous_release.yml'
         $workflow = Get-Content -LiteralPath $workflowPath -Raw
 
@@ -268,37 +268,95 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $workflow | Should -Match "startsWith\(github\.event\.workflow_run\.head_commit\.message, 'Prepare v'\)"
         $workflow | Should -Match "github\.event\.workflow_run\.head_commit\.author\.name == 'github-actions\[bot\]'"
 
-        # Module-domain work lives in Invoke-Build tasks; deployment plumbing lives in composite
-        # actions. Neither manifest stamping nor packaging appears inline in the workflow.
+        # Release metadata still uses build tasks and shared actions.
         $workflow | Should -Match 'Invoke-Build -Task SetSourceVersion'
-        $workflow | Should -Match 'Invoke-Build -Task SetVersion .*-VerifyPublishedRelease'
-        $workflow | Should -Match 'Invoke-Build -Task Package'
         $workflow | Should -Match 'uses: \./\.github/actions/commit-release-metadata'
         $workflow | Should -Match 'uses: \./\.github/actions/create-release-tag'
         $workflow | Should -Not -Match 'Set-AtlassianPSModuleManifestVersion'
         $workflow | Should -Not -Match 'Get-AtlassianPSReleaseNotesFromChangelog'
         $workflow | Should -Not -Match 'Compress-Archive'
 
-        # The artifact is stamped and verified before it is published to immutable PSGallery.
-        $verifyIndex = $workflow.IndexOf('-VerifyPublishedRelease')
+        # Publication consumes the commit-specific CI package without stamping or repackaging.
+        $workflow | Should -Match 'Verified-Release-\$\{\{ github\.event\.workflow_run\.head_sha \}\}'
+        $workflow | Should -Match 'Test-AtlassianPSReleaseProvenance'
+        $workflow | Should -Match 'gh attestation verify'
+        $workflow | Should -Match "--source-digest '\$\{\{ github\.event\.workflow_run\.head_sha \}\}'"
+        $workflow | Should -Match "--source-ref 'refs/heads/master'"
+        $workflow | Should -Match '--deny-self-hosted-runners'
+        $workflow | Should -Not -Match 'Invoke-Build -Task SetVersion'
+        $workflow | Should -Not -Match 'Invoke-Build -Task Package'
+        $workflow | Should -Match 'Publish-Module -Path \./Publish/AtlassianPS\.Standards'
+
+        $provenanceIndex = $workflow.IndexOf('Test-AtlassianPSReleaseProvenance')
+        $attestationIndex = $workflow.IndexOf('gh attestation verify')
         $publishIndex = $workflow.IndexOf('Publish-Module')
-        $verifyIndex | Should -BeGreaterThan -1
-        $publishIndex | Should -BeGreaterThan $verifyIndex
+        $provenanceIndex | Should -BeGreaterThan -1
+        $attestationIndex | Should -BeGreaterThan $provenanceIndex
+        $publishIndex | Should -BeGreaterThan $attestationIndex
     }
 
-    It 'keeps publishing secrets and publish tasks out of the build script' {
+    It 'keeps publishing secrets out of the build script and creates provenance through build tasks' {
         $buildScriptPath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards.build.ps1'
         $buildScript = Get-Content -LiteralPath $buildScriptPath -Raw
 
         $buildScript | Should -Not -Match '(?m)^Task Publish\b'
         $buildScript | Should -Not -Match 'PSGalleryAPIKey'
         $buildScript | Should -Match '(?m)^Task Package\b'
+        $buildScript | Should -Match '(?m)^Task Provenance\b'
+        $buildScript | Should -Match '(?m)^Task SetArtifactReleaseNotes\b'
         $buildScript | Should -Match '(?m)^Task SetSourceVersion\b'
         $buildScript | Should -Match '(?m)^Task SetVersion\b'
         $buildScript | Should -Match '(?m)^Task TestPublish\b'
         # The publish-time stamp/verify is owned by the build task, parameterized by a switch.
         $buildScript | Should -Match '\[Switch\]\$VerifyPublishedRelease'
         $buildScript | Should -Match 'EnforceGreaterThanPublished'
+    }
+
+    It 'CI packages only after all test jobs and attests the commit-specific artifact' {
+        $workflowPath = Join-Path -Path $projectRoot -ChildPath '.github/workflows/ci.yml'
+        $workflow = Get-Content -LiteralPath $workflowPath -Raw
+
+        $workflow | Should -Match 'provenance:\s+name: Package and attest tested artifact'
+        $workflow | Should -Match 'needs: \[build, test_windows_ps5, test_pwsh\]'
+        $workflow | Should -Match 'Invoke-Build -Task Provenance'
+        $workflow | Should -Match "name: Verified-Release-\$\{\{ github\.sha \}\}"
+        $workflow | Should -Match 'uses: actions/attest@[0-9a-f]{40} # v4'
+        $workflow | Should -Match 'id-token: write'
+        $workflow | Should -Match 'attestations: write'
+        $workflow | Should -Match 'artifact-metadata: write'
+        $workflow | Should -Match 'needs: \[lint, build, test_windows_ps5, test_pwsh, provenance\]'
+    }
+
+    It 'pins every third-party workflow action to a full commit SHA' {
+        $actionPaths = @(
+            Get-ChildItem `
+                -Path (Join-Path -Path $projectRoot -ChildPath '.github/workflows') `
+                -Filter '*.yml'
+            Get-ChildItem `
+                -Path (Join-Path -Path $projectRoot -ChildPath '.github/actions') `
+                -Filter '*.yml' `
+                -Recurse
+        )
+        foreach ($actionPath in $actionPaths) {
+            $workflow = Get-Content -LiteralPath $actionPath.FullName
+            $externalUses = @(
+                $workflow |
+                    Where-Object { $_ -match '^\s*uses:\s*(?!\./)(?<coordinate>[^@\s]+)@(?<ref>[^\s#]+)' }
+            )
+            foreach ($usesLine in $externalUses) {
+                $usesLine | Should -Match '@[0-9a-f]{40}(?:\s+#\s+v\S+)?$'
+            }
+        }
+    }
+
+    It 'scopes publishing secrets and write permissions to the protected release job' {
+        $workflowPath = Join-Path -Path $projectRoot -ChildPath '.github/workflows/continuous_release.yml'
+        $workflow = Get-Content -LiteralPath $workflowPath -Raw
+
+        $workflow | Should -Match '(?ms)^permissions:\s+actions: read\s+contents: read'
+        $workflow | Should -Match '(?ms)^  publish:.*?environment: release.*?permissions:\s+actions: read\s+attestations: read\s+contents: write'
+        $workflow | Should -Match '(?ms)^  publish:.*?secrets\.PSGALLERY_API_KEY'
+        $workflow | Should -Match '(?ms)^  publish:.*?secrets\.HOMEPAGE_PAT'
     }
 
     It 'does not keep a non-idempotent tag release workflow beside continuous release' {

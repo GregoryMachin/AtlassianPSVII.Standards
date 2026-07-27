@@ -9,6 +9,8 @@ Module repositories may keep short local runbooks, but cross-repository release 
 - Reuse shared Standards primitives instead of copying release logic into each repository.
 - Keep `CHANGELOG.md`, GitHub release bodies, and PSGallery manifest `PrivateData.PSData.ReleaseNotes` synchronized.
 - Fail release-note and tag validation before publishing immutable PSGallery packages.
+- Publish the exact CI-tested package identified by deterministic checksums and signed provenance.
+- Ship a machine-readable dependency manifest with every release.
 - Make workflow drift visible in tests.
 
 ## Version And Changelog Contract
@@ -40,14 +42,15 @@ After CI succeeds on a normal merged pull request with `release:patch`, `release
 6. Run `prepare-release-changelog` to fold pending notes and fragments into the new version section.
 7. Stamp only the release version into the source module manifest; release notes stay empty in the committed source.
 8. Commit the release metadata changes directly to `master`.
-9. Let CI build and test the bot-authored release metadata commit (the built artifact inherits the stamped version).
-10. Download the CI `Release` artifact from that exact commit.
-11. Create an annotated tag on the tested release metadata commit.
-12. Build release notes from the committed `CHANGELOG.md` section.
-13. Run `Invoke-Build -Task SetVersion ... -VerifyPublishedRelease` to populate release notes into the tested artifact and verify its version, without rebuilding the package.
-14. Publish the verified module artifact to PSGallery.
-15. Create the GitHub release with the same release notes body.
-16. Notify the website to update its module submodule.
+9. Let CI build and test the bot-authored release metadata commit; the build populates release notes into the built manifest before the test matrix.
+10. After every required test job passes, create one reproducible ZIP from the unchanged tested module directory.
+11. Generate `SHA256SUMS`, `dependency-manifest.json`, and `release-provenance.json` for that ZIP and exact source commit.
+12. Sign and persist a GitHub build-provenance attestation for the ZIP, then upload a commit-specific verified artifact.
+13. Download only that commit-specific artifact and verify its checksums, repository, commit, workflow run, release tag, and signed attestation.
+14. Create an annotated tag on the tested release metadata commit and build release notes from the committed `CHANGELOG.md` section.
+15. Extract the attested ZIP and publish its unchanged module contents to PSGallery.
+16. Create the GitHub release with the same attested ZIP, checksums, dependency manifest, provenance, and attestation bundle.
+17. Notify the website to update its module submodule.
 
 `release:none` merges should stop after planning and must not publish.
 The workflow should be serialized with concurrency so multiple release-labelled merges do not race the next-version calculation.
@@ -86,11 +89,11 @@ workflow consumes these Standards actions: `setup-powershell`, `plan-merged-rele
     release-version: ${{ steps.release_ref.outputs.release_tag }}
 ```
 
-GitHub releases should use the generated file path:
+GitHub releases should use the generated file path and pin third-party actions to full commit SHAs:
 
 ```yaml
 - name: Create Release and Upload Asset
-  uses: softprops/action-gh-release@v3
+  uses: softprops/action-gh-release@<action-sha> # v3
   with:
     tag_name: ${{ steps.release_ref.outputs.release_tag }}
     name: ${{ steps.release_ref.outputs.release_tag }}
@@ -102,13 +105,11 @@ GitHub release notes and PSGallery manifest release notes should be the same sou
 
 ## Required Build Script Pattern
 
-Release-artifact stamping and verification belong in the local `Invoke-Build` script, not inline in the
-workflow YAML. The committed source manifest keeps release notes empty; the `SetVersion` task populates
-release notes into the built artifact at publish time and verifies the package before it is published.
-
-The prepare job stamps the source manifest version through `SetSourceVersion`; the publish path runs
-`SetVersion` in `-VerifyPublishedRelease` mode so a malformed or unstamped artifact fails before the
-immutable PSGallery publish. The workflow only invokes these tasks; it never stamps manifests inline.
+Release metadata and provenance creation belong in the local `Invoke-Build` script, not inline in workflow YAML.
+The committed source manifest keeps release notes empty.
+The build copies the module, populates release notes into the built manifest, and then exposes that exact directory to every test job.
+Only after tests pass may CI package it and create provenance.
+The publishing workflow verifies and extracts that attested package; it must not stamp, rebuild, or repackage it.
 
 ```powershell
 # Synopsis: Stamp the planned version into the committed source manifest (release notes stay empty here).
@@ -123,63 +124,44 @@ Task SetSourceVersion {
         -VersionToPublish $script:BuildInfo.VersionToPublish
 }
 
-Task SetVersion {
-    if (-not $script:BuildInfo.VersionToPublish) {
-        throw 'VersionToPublish is required for SetVersion. Use -VersionToPublish <semver>.'
-    }
-
+Task SetArtifactReleaseNotes {
     $builtManifestPath = $script:BuildInfo.BuiltManifestPath
-    $expectedCore = $script:BuildInfo.VersionToPublish -replace '-.*$', ''
-
-    # The CI-tested artifact is built from the already version-stamped source manifest, so in
-    # release mode it must already carry the planned version. A mismatch means the prepare step
-    # never stamped the source manifest.
-    if ($VerifyPublishedRelease) {
-        $built = Import-PowerShellDataFile -LiteralPath $builtManifestPath
-        if ($built.ModuleVersion -ne $expectedCore) {
-            throw "Built artifact ModuleVersion '$($built.ModuleVersion)' does not match release version '$($script:BuildInfo.VersionToPublish)'."
-        }
-    }
-
+    $built = Import-PowerShellDataFile -LiteralPath $builtManifestPath
+    $releaseVersion = "v$($built.ModuleVersion)"
     $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
         -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
-        -ReleaseVersion $script:BuildInfo.VersionToPublish
+        -ReleaseVersion $releaseVersion
 
-    $setVersionParameters = @{
-        BuiltManifestPath = $builtManifestPath
-        ModuleName        = $env:BHProjectName
-        VersionToPublish  = $script:BuildInfo.VersionToPublish
-        ReleaseNotes      = $releaseNotes
-    }
-    if ($VerifyPublishedRelease) {
-        $setVersionParameters.EnforceGreaterThanPublished = $true
-    }
-    $null = Set-AtlassianPSModuleManifestVersion @setVersionParameters
-
-    if ($VerifyPublishedRelease) {
-        $stamped = Import-PowerShellDataFile -LiteralPath $builtManifestPath
-        if ($stamped.ModuleVersion -ne $expectedCore) {
-            throw "Artifact ModuleVersion '$($stamped.ModuleVersion)' does not match expected '$expectedCore' after stamping."
-        }
-        if ([string]::IsNullOrWhiteSpace($stamped.PrivateData.PSData.ReleaseNotes)) {
-            throw 'Artifact PrivateData.PSData.ReleaseNotes is empty after stamping.'
-        }
-    }
+    $null = Set-AtlassianPSModuleManifestVersion `
+        -BuiltManifestPath $builtManifestPath `
+        -ModuleName $env:BHProjectName `
+        -VersionToPublish $releaseVersion `
+        -ReleaseNotes $releaseNotes
 }
 
-# Synopsis: Compress the built module into the publishable release artifact
 Task Package {
     $script:PackagePath = New-AtlassianPSModulePackage `
         -BuildOutputPath $env:BHBuildOutput `
         -ModuleName $env:BHProjectName
 }
+
+Task Provenance Package, {
+    $null = New-AtlassianPSReleaseProvenance `
+        -PackagePath $script:PackagePath `
+        -ModuleManifestPath $script:BuildInfo.BuiltManifestPath `
+        -BuildRequirementsPath "$env:BHProjectPath/Tools/build.requirements.psd1" `
+        -Repository $SourceRepository `
+        -CommitSha $SourceCommitSha `
+        -SourceRef $SourceRef `
+        -RunId $RunId `
+        -OutputPath $env:BHBuildOutput
+}
 ```
 
 Keep repository build orchestration local.
 Use Standards for small primitives and shared actions, not for broad module-specific release wrappers.
-The continuous release workflow only invokes build tasks (`SetSourceVersion`, `SetVersion`, `Package`) for
-module-domain work and Standards composite actions for deployment plumbing; it embeds no manifest-stamping
-or packaging logic in the workflow YAML.
+CI invokes build tasks (`SetArtifactReleaseNotes`, `Package`, and `Provenance`) for module-domain work.
+Continuous release invokes `SetSourceVersion` only while preparing metadata, then uses Standards verification primitives and composite actions for deployment plumbing.
 
 ## Drift Guards
 
@@ -192,12 +174,16 @@ At minimum, test that:
 - The release workflow uses `build-release-notes`.
 - The release workflow uses `body_path: ${{ steps.release_notes.outputs.release_notes_path }}`.
 - The release workflow builds release notes before publishing.
-- The publish job stamps and verifies the artifact through `Invoke-Build -Task SetVersion ... -VerifyPublishedRelease` rather than inline manifest-stamping in the workflow YAML.
-- The publish job runs the artifact stamp/verify step before `Publish-Module`.
-- Module-domain work runs through build tasks (`SetSourceVersion`, `SetVersion`, `Package`) and deployment plumbing through composite actions (`commit-release-metadata`, `create-release-tag`); the workflow contains no inline manifest stamping or `Compress-Archive` packaging.
+- CI packages only after the complete test matrix and creates deterministic checksums plus a dependency manifest.
+- CI signs the package through `actions/attest` with only `id-token`, `attestations`, and artifact-metadata write permissions.
+- The verified artifact name includes the exact source commit SHA.
+- The publish job checks repository, commit, run, release tag, checksums, and attestation before `Publish-Module`.
+- The publish job enforces the CI signer workflow, source digest, source ref, and hosted-runner policy with `gh attestation verify`.
+- The publish job contains no artifact stamping, rebuild, or repackaging step.
+- All third-party actions are pinned to full commit SHAs with version comments.
 - The repository does not keep a non-idempotent `.github/workflows/release.yml` beside `continuous_release.yml`.
 - The build script uses `Get-AtlassianPSReleaseNotesFromChangelog` for manifest release notes.
-- The `SetVersion` task verifies the built artifact version and non-empty release notes in `-VerifyPublishedRelease` mode.
+- The built manifest receives release notes before the test matrix.
 - The build script keeps publishing secrets and a `Publish` task out (publishing stays in the workflow).
 - The committed source manifest keeps `PrivateData.PSData.ReleaseNotes` empty; release notes are populated only into the built artifact.
 - The repository does not contain `changelog-to-release`, `.github/changelog.configuration.json`, or copied inline parser/write-file plumbing.
@@ -404,7 +390,7 @@ jobs:
       !startsWith(github.event.workflow_run.head_commit.message, 'Prepare v'))
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@<checkout-sha> # v6
         with:
           fetch-depth: 0
           ref: ${{ github.event_name == 'workflow_dispatch' && 'master' || github.event.workflow_run.head_sha }}
@@ -460,7 +446,7 @@ jobs:
       github.event.workflow_run.head_commit.author.name == 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@<checkout-sha> # v6
         with:
           fetch-depth: 0
           ref: ${{ github.event.workflow_run.head_sha }}
@@ -477,14 +463,41 @@ jobs:
           "release_tag=$($Matches.tag)" >> $env:GITHUB_OUTPUT
 
       - name: Download tested release artifact
-        uses: dawidd6/action-download-artifact@v21
+        uses: dawidd6/action-download-artifact@<download-action-sha> # v21
         with:
           run_id: ${{ github.event.workflow_run.id }}
-          name: Release
-          path: ./Release/
+          name: Verified-Release-${{ github.event.workflow_run.head_sha }}
+          path: ./VerifiedRelease/
           if_no_artifact_found: fail
 
       - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@<standards-sha> # vX.Y.Z
+
+      - name: Verify checksums and provenance identity
+        shell: pwsh
+        run: |
+          Test-AtlassianPSReleaseProvenance `
+            -ReleasePath ./VerifiedRelease `
+            -ExpectedRepository '${{ github.repository }}' `
+            -ExpectedCommitSha '${{ github.event.workflow_run.head_sha }}' `
+            -ExpectedRunId '${{ github.event.workflow_run.id }}' `
+            -ExpectedReleaseTag '${{ steps.prepared_release.outputs.release_tag }}' `
+            -AttestationPath ./VerifiedRelease/<ModuleName>.intoto.jsonl `
+            -RequireAttestation
+
+      - name: Verify GitHub artifact attestation
+        shell: bash
+        run: |
+          gh attestation verify ./VerifiedRelease/<ModuleName>.zip \
+            --bundle ./VerifiedRelease/<ModuleName>.intoto.jsonl \
+            --repo '${{ github.repository }}' \
+            --signer-workflow '${{ github.repository }}/.github/workflows/ci.yml' \
+            --source-digest '${{ github.event.workflow_run.head_sha }}' \
+            --source-ref 'refs/heads/master' \
+            --deny-self-hosted-runners
+
+      - name: Extract attested package
+        shell: pwsh
+        run: Expand-Archive -LiteralPath ./VerifiedRelease/<ModuleName>.zip -DestinationPath ./Publish
 
       - name: Create annotated release tag
         uses: AtlassianPS/AtlassianPS.Standards/.github/actions/create-release-tag@<standards-sha> # vX.Y.Z
@@ -503,25 +516,22 @@ jobs:
         with:
           release-version: ${{ steps.release_ref.outputs.release_tag }}
 
-      - name: Stamp and verify release artifact
-        run: Invoke-Build -Task SetVersion -VersionToPublish ${{ steps.release_ref.outputs.release_tag }} -VerifyPublishedRelease
-        shell: pwsh
-
-      - name: Package release artifact
-        run: Invoke-Build -Task Package
-        shell: pwsh
-
       - name: Publish tested module artifact
-        run: Publish-Module -Path ./Release/<ModuleName> -NuGetApiKey ${{ secrets.PSGALLERY_API_KEY }} -ErrorAction Stop
+        run: Publish-Module -Path ./Publish/<ModuleName> -NuGetApiKey ${{ secrets.PSGALLERY_API_KEY }} -ErrorAction Stop
         shell: pwsh
 
       - name: Create GitHub release and upload asset
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@<release-action-sha> # v3
         with:
           tag_name: ${{ steps.release_ref.outputs.release_tag }}
           name: ${{ steps.release_ref.outputs.release_tag }}
           body_path: ${{ steps.release_notes.outputs.release_notes_path }}
-          files: ./Release/<ModuleName>.zip
+          files: |
+            ./VerifiedRelease/<ModuleName>.zip
+            ./VerifiedRelease/SHA256SUMS
+            ./VerifiedRelease/dependency-manifest.json
+            ./VerifiedRelease/release-provenance.json
+            ./VerifiedRelease/<ModuleName>.intoto.jsonl
           fail_on_unmatched_files: true
           draft: false
           prerelease: ${{ contains(steps.release_ref.outputs.release_tag, '-alpha') || contains(steps.release_ref.outputs.release_tag, '-beta') || contains(steps.release_ref.outputs.release_tag, '-rc') }}
@@ -530,7 +540,7 @@ jobs:
 
       - name: Notify homepage to update submodule
         if: ${{ !contains(steps.release_ref.outputs.release_tag, '-alpha') && !contains(steps.release_ref.outputs.release_tag, '-beta') && !contains(steps.release_ref.outputs.release_tag, '-rc') }}
-        uses: peter-evans/repository-dispatch@v4
+        uses: peter-evans/repository-dispatch@<dispatch-action-sha> # v4
         with:
           token: ${{ secrets.HOMEPAGE_PAT }}
           repository: AtlassianPS/AtlassianPS.github.io
@@ -581,7 +591,7 @@ git diff --check
 Invoke-Build -Task Lint, Build, Test
 ```
 
-Optionally use a local throwaway version for a `SetVersion` preflight only after `CHANGELOG.md` has a matching section.
+Optionally use a local throwaway version for a build preflight only after `CHANGELOG.md` has a matching section.
 If no release section exists yet, test the parser by preparing a temporary changelog section and revert that temporary change before opening the PR.
 
 ## Release Preparation
@@ -604,7 +614,7 @@ For manual release preparation outside the continuous release workflow, review t
 Invoke-Build -Task Build, Test
 ```
 
-Optionally run `Invoke-Build -Task Build, SetVersion -VersionToPublish vX.Y.Z` as a local metadata preflight.
+Optionally run `Invoke-Build -Task Build` after temporarily aligning the source manifest and changelog in a throwaway branch.
 If the preflight cannot find a matching changelog section, do not tag the release.
 
 ## Common Mistakes

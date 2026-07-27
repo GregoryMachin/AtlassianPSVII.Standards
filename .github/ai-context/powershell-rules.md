@@ -38,6 +38,9 @@ Instruction-only changes may be skipped by CI path filters; run local validation
 - Keep release implementation reusable as small Standards primitives/actions; do not copy broad orchestration into module repositories.
 - PRs declare release intent with `release:*` labels and, for user-facing changes, `changelog:*` labels or `.changelog` fragments. Contributors should not need to pick the final release version.
 - Release notes must come from the same `CHANGELOG.md` section for GitHub release bodies and PSGallery manifest `PrivateData.PSData.ReleaseNotes`.
+- Package only after the complete CI test matrix, generate deterministic checksums and dependency/source provenance, and attest the package.
+- Publish only by verifying and extracting the commit-specific CI package; do not stamp, rebuild, or repackage it in the release job.
+- Pin every third-party GitHub Action to a full commit SHA with a version comment.
 - If release flow changes, update the blueprint, helper catalog, tests, changelog, and agent instructions together.
 
 ## Source Layout

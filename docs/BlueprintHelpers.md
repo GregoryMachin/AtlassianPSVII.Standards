@@ -12,7 +12,8 @@ Consumers call commands with the prefixed names, for example `Test-AtlassianPSMo
 | Area | Helpers | Contract |
 |------|---------|----------|
 | Build output | `Copy-ModuleArtifacts`, `Join-ModuleSource` | Copy release artifacts and merge module source folders into the release `.psm1`. |
-| Manifest and package validation | `Update-ModuleManifestExports`, `Set-ModuleManifestVersion`, `Get-ReleaseNotesFromChangelog`, `New-ModulePackage`, `Test-ModulePackage` | Update manifest exports, set release metadata, create a local package zip, and validate the package contains the expected manifest. |
+| Manifest and package validation | `Update-ModuleManifestExports`, `Set-ModuleManifestVersion`, `Get-ReleaseNotesFromChangelog`, `New-ModulePackage`, `Test-ModulePackage` | Update manifest exports, set release metadata, create a reproducible package ZIP, and validate the package contains the expected manifest. |
+| Release provenance | `New-ReleaseProvenance`, `Test-ReleaseProvenance` | Write deterministic SHA-256 checksums and dependency/source provenance, then verify artifact identity before signed-attestation verification. |
 | External help | `Update-ExternalHelp`, `Remove-OrphanedExternalHelp` | Generate PlatyPS external help and remove generated help files that no longer have markdown sources. |
 | Test bootstrap | `Resolve-ProjectRoot`, `Resolve-ModuleSource`, `Initialize-ModuleTestEnvironment` | Resolve repository/module paths and import the module under test for Pester. |
 | Environment loading | `Import-DotEnvFile` | Load `.env` values into process-scoped environment variables without emitting secret values. |
@@ -48,8 +49,9 @@ Task UpdateManifest {
 
 ## Publish Dry Run
 
-Package validation is intentionally two visible steps: create the package, then validate it.
-Continuous release publishes the CI-tested `Release` artifact directly; repository build scripts should not keep separate `Publish` or `Package` tasks for the release path.
+Package validation is intentionally two visible steps: create the reproducible package, then validate it.
+CI performs these steps only after all tests pass and generates provenance for the unchanged tested directory.
+Continuous release verifies and extracts the attested ZIP without rebuilding it.
 
 ```powershell
 Task TestPublish Build, {
@@ -63,6 +65,23 @@ Task TestPublish Build, {
         -PackagePath $packagePath
 }
 ```
+
+Create provenance beside the package:
+
+```powershell
+$provenance = New-AtlassianPSReleaseProvenance `
+    -PackagePath $packagePath `
+    -ModuleManifestPath $script:BuildInfo.BuiltManifestPath `
+    -BuildRequirementsPath ./Tools/build.requirements.psd1 `
+    -Repository $env:GITHUB_REPOSITORY `
+    -CommitSha $env:GITHUB_SHA `
+    -SourceRef $env:GITHUB_REF `
+    -RunId $env:GITHUB_RUN_ID `
+    -OutputPath $env:BHBuildOutput
+```
+
+`Test-AtlassianPSReleaseProvenance` verifies the recorded repository, commit, run, release tag, SHA-256 values, and required attestation-bundle presence.
+Follow it with `gh attestation verify` to validate the signature and trusted CI identity.
 
 ## Release Notes
 
@@ -78,21 +97,23 @@ Use the shared `build-release-notes` action in GitHub workflows so repositories 
     release-version: ${{ steps.release_ref.outputs.release_tag }}
 
 - name: Create Release
-  uses: softprops/action-gh-release@v3
+  uses: softprops/action-gh-release@<action-sha> # v3
   with:
     body_path: ${{ steps.release_notes.outputs.release_notes_path }}
 ```
 
 ```powershell
-Task SetVersion {
+Task SetArtifactReleaseNotes {
+    $built = Import-PowerShellDataFile -LiteralPath $script:BuildInfo.BuiltManifestPath
+    $releaseVersion = "v$($built.ModuleVersion)"
     $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
         -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
-        -ReleaseVersion $script:BuildInfo.VersionToPublish
+        -ReleaseVersion $releaseVersion
 
     $null = Set-AtlassianPSModuleManifestVersion `
         -BuiltManifestPath $script:BuildInfo.BuiltManifestPath `
         -ModuleName $env:BHProjectName `
-        -VersionToPublish $VersionToPublish `
+        -VersionToPublish $releaseVersion `
         -ReleaseNotes $releaseNotes
 }
 ```
@@ -104,7 +125,8 @@ Task SetVersion {
 Release automation should fold pending changelog entries and custom fragments into the next version section, then delete the consumed fragments.
 Use the `prepare-release-changelog` composite action instead of exporting another module helper for GitHub-only release mechanics.
 In the continuous release workflow, commit the resulting `CHANGELOG.md` update and `.changelog` deletions directly to `master` after a release-labelled PR merges.
-Commit the source module manifest version and release notes in that same release metadata commit so repository readers do not see drift between the tag, changelog, and manifest metadata.
+Commit the source module manifest version in that same release metadata commit.
+Keep source release notes empty; the build derives them from the committed changelog before testing the artifact.
 For manual release preparation, commit the same files before tagging the release.
 
 ```yaml

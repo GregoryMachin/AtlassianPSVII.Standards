@@ -102,6 +102,25 @@
 
         $escapedKey = [Regex]::Escape($Key)
         $valueToken = if ($Multiline) { "'(?:[^']|'')*'" } else { "(?<q>['`"])[^'`"]*\k<q>" }
+        $escapedValue = $Value -replace "'", "''"
+
+        # Update-ModuleManifest comments optional PSData fields when they are empty.
+        # Activate those fields before inserting release metadata.
+        $commentedPattern = "(?m)^(?<indent>[ \t]*)#[ \t]*$escapedKey[ \t]*=[ \t]*$valueToken[ \t]*\r?$"
+        if ([Regex]::IsMatch($Content, $commentedPattern)) {
+            $commentedEvaluator = {
+                param($match)
+                '{0}{1} = ''{2}''' -f $match.Groups['indent'].Value, $Key, $escapedValue
+            }.GetNewClosure()
+
+            return [Regex]::Replace(
+                $Content,
+                $commentedPattern,
+                [Text.RegularExpressions.MatchEvaluator]$commentedEvaluator,
+                1
+            )
+        }
+
         # Key boundary, not line start, so single-line and multi-line manifests both match.
         $pattern = "(?<prefix>(?<![\w-])$escapedKey[ \t]*=[ \t]*)$valueToken"
 
@@ -112,7 +131,6 @@
             throw "Manifest key '$Key' with a quoted value was not found in '$BuiltManifestPath'."
         }
 
-        $escapedValue = $Value -replace "'", "''"
         $evaluator = {
             param($match)
             '{0}''{1}''' -f $match.Groups['prefix'].Value, $escapedValue

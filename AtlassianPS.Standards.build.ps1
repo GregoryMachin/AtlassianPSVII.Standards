@@ -16,7 +16,19 @@ param(
     # Release-publish mode: require the built artifact to already carry the planned version,
     # enforce it is newer than the published package, and verify release notes were written.
     [Parameter()]
-    [Switch]$VerifyPublishedRelease
+    [Switch]$VerifyPublishedRelease,
+
+    [Parameter()]
+    [String]$SourceRepository,
+
+    [Parameter()]
+    [String]$SourceCommitSha,
+
+    [Parameter()]
+    [String]$SourceRef,
+
+    [Parameter()]
+    [String]$RunId
 )
 
 $projectName = 'AtlassianPS.Standards'
@@ -72,7 +84,7 @@ Task CopyBuildArtifacts {
         -IncludeTests
 }
 
-Task Build Clean, CopyBuildArtifacts, CompileModule, UpdateManifest
+Task Build Clean, CopyBuildArtifacts, CompileModule, UpdateManifest, SetArtifactReleaseNotes
 
 # Synopsis: Compile all functions into the .psm1 file
 Task CompileModule {
@@ -86,6 +98,27 @@ Task UpdateManifest {
         -SourceModulePath $env:BHModulePath `
         -BuiltManifestPath $script:BuildInfo.BuiltManifestPath `
         -ModuleName $env:BHProjectName
+}
+
+# Synopsis: Populate release notes before tests so publication never mutates the tested artifact.
+Task SetArtifactReleaseNotes {
+    $builtManifestPath = $script:BuildInfo.BuiltManifestPath
+    $built = Import-PowerShellDataFile -LiteralPath $builtManifestPath -ErrorAction Stop
+    $prerelease = [String]$built.PrivateData.PSData.Prerelease
+    $releaseVersion = 'v{0}{1}' -f $built.ModuleVersion, $(
+        if ([String]::IsNullOrWhiteSpace($prerelease)) { '' } else { "-$prerelease" }
+    )
+    $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
+        -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
+        -ReleaseVersion $releaseVersion `
+        -ErrorAction Stop
+
+    $null = Set-AtlassianPSModuleManifestVersion `
+        -BuiltManifestPath $builtManifestPath `
+        -ModuleName $env:BHProjectName `
+        -VersionToPublish $releaseVersion `
+        -ReleaseNotes $releaseNotes `
+        -ErrorAction Stop
 }
 
 Task Test {
@@ -159,6 +192,30 @@ Task Package {
     $script:PackagePath = New-AtlassianPSModulePackage `
         -BuildOutputPath $env:BHBuildOutput `
         -ModuleName $env:BHProjectName
+}
+
+# Synopsis: Record package checksums, pinned dependencies, source identity, and CI identity.
+Task Provenance Package, {
+    foreach ($requiredValue in @(
+            @{ Name = 'SourceRepository'; Value = $SourceRepository }
+            @{ Name = 'SourceCommitSha'; Value = $SourceCommitSha }
+            @{ Name = 'SourceRef'; Value = $SourceRef }
+            @{ Name = 'RunId'; Value = $RunId }
+        )) {
+        if ([String]::IsNullOrWhiteSpace([String]$requiredValue.Value)) {
+            throw "$($requiredValue.Name) is required for Provenance."
+        }
+    }
+
+    $script:Provenance = New-AtlassianPSReleaseProvenance `
+        -PackagePath $script:PackagePath `
+        -ModuleManifestPath $script:BuildInfo.BuiltManifestPath `
+        -BuildRequirementsPath (Join-Path -Path $env:BHProjectPath -ChildPath 'Tools/build.requirements.psd1') `
+        -Repository $SourceRepository `
+        -CommitSha $SourceCommitSha `
+        -SourceRef $SourceRef `
+        -RunId $RunId `
+        -OutputPath $env:BHBuildOutput
 }
 
 Task TestPublish Build, Package, {

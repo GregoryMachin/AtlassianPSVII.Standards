@@ -185,6 +185,35 @@ Describe 'Set-ModuleManifestVersion' {
         ($written -replace "`r`n", "`n") | Should -Be $notes
     }
 
+    It 'activates generated manifest fields that are commented while empty' {
+        $manifestPath = Join-Path -Path $TestDrive -ChildPath 'module-commented-metadata.psd1'
+        $commentedManifest = $script:manifestTemplate `
+            -replace "        Prerelease   = ''", "        # Prerelease = ''" `
+            -replace "        ReleaseNotes = ''", "        # ReleaseNotes = ''"
+        Set-Content -LiteralPath $manifestPath -Value $commentedManifest
+
+        $notes = "- Fixed don't break on apostrophes`n- Preserve `$variables"
+        $null = Set-AtlassianPSModuleManifestVersion `
+            -BuiltManifestPath $manifestPath `
+            -ModuleName 'Sample' `
+            -VersionToPublish '1.2.3-rc-2' `
+            -ReleaseNotes $notes
+
+        $tokens = $null
+        $parseErrors = $null
+        $null = [Management.Automation.Language.Parser]::ParseFile(
+            $manifestPath,
+            [Ref]$tokens,
+            [Ref]$parseErrors
+        )
+        @($parseErrors.Message) | Should -BeNullOrEmpty -Because (
+            Get-Content -LiteralPath $manifestPath -Raw
+        )
+        $written = Import-PowerShellDataFile -LiteralPath $manifestPath
+        $written.PrivateData.PSData.Prerelease | Should -Be 'rc-2'
+        ($written.PrivateData.PSData.ReleaseNotes -replace "`r`n", "`n") | Should -Be $notes
+    }
+
     It 'does not check the published version unless -EnforceGreaterThanPublished is set' {
         $manifestPath = Join-Path -Path $TestDrive -ChildPath 'module-noenforce.psd1'
         Set-Content -LiteralPath $manifestPath -Value $script:manifestTemplate

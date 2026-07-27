@@ -7,7 +7,7 @@ Exported helpers cover:
 - analyzer settings sync and lint orchestration (`Sync-ScriptAnalyzerSettings`, `Invoke-Lint`)
 - build environment bootstrap and diagnostics (`Initialize-BuildEnvironment`, `Write-BuildInfo`)
 - build output helpers (`Copy-ModuleArtifacts`, `Join-ModuleSource`)
-- manifest and release helpers (`Update-ModuleManifestExports`, `Set-ModuleManifestVersion`, `New-ModulePackage`, `Test-ModulePackage`)
+- manifest, reproducible package, and provenance helpers (`New-ModulePackage`, `New-ReleaseProvenance`, `Test-ReleaseProvenance`)
 - help generation helpers (`Update-ExternalHelp`, `Remove-OrphanedExternalHelp`)
 - Pester orchestration (`Invoke-ModuleTests`)
 - test bootstrap helpers (`Resolve-ProjectRoot`, `Resolve-ModuleSource`, `Initialize-ModuleTestEnvironment`)

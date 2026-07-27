@@ -159,6 +159,31 @@ Describe 'New-ModulePackage' {
         $zipPath | Should -Match 'AtlassianPS\.Standards\.zip$'
     }
 
+    It 'creates byte-identical archives regardless of source timestamps' {
+        $buildOutput = Join-Path -Path $TestDrive -ChildPath 'Release-deterministic'
+        $modulePath = Join-Path -Path $buildOutput -ChildPath 'Deterministic'
+        $null = New-Item -Path $modulePath -ItemType Directory -Force
+        $firstFile = Join-Path -Path $modulePath -ChildPath 'a.txt'
+        $secondFile = Join-Path -Path $modulePath -ChildPath 'z.txt'
+        Set-Content -LiteralPath $firstFile -Value 'alpha'
+        Set-Content -LiteralPath $secondFile -Value 'zeta'
+
+        $firstPackage = New-AtlassianPSModulePackage `
+            -BuildOutputPath $buildOutput `
+            -ModuleName 'Deterministic' `
+            -DestinationPath (Join-Path -Path $buildOutput -ChildPath 'first.zip')
+
+        (Get-Item -LiteralPath $firstFile).LastWriteTimeUtc = [DateTime]'2030-01-01T00:00:00Z'
+        (Get-Item -LiteralPath $secondFile).LastWriteTimeUtc = [DateTime]'2040-01-01T00:00:00Z'
+        $secondPackage = New-AtlassianPSModulePackage `
+            -BuildOutputPath $buildOutput `
+            -ModuleName 'Deterministic' `
+            -DestinationPath (Join-Path -Path $buildOutput -ChildPath 'second.zip')
+
+        (Get-FileHash -LiteralPath $firstPackage -Algorithm SHA256).Hash |
+            Should -BeExactly (Get-FileHash -LiteralPath $secondPackage -Algorithm SHA256).Hash
+    }
+
     It 'throws when release files are missing' {
         $buildOutput = Join-Path -Path $TestDrive -ChildPath 'Release-missing'
 
