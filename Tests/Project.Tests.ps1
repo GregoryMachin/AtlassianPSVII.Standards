@@ -12,6 +12,7 @@
 Describe 'Project validation' {
     It 'exports only the intentional public command surface' {
         $expectedCommands = @(
+            'ConvertTo-AtlassianPSApiCanaryResult'
             'Copy-AtlassianPSModuleArtifacts'
             'Get-AtlassianPSReleaseNotesFromChangelog'
             'Import-AtlassianPSDotEnvFile'
@@ -28,6 +29,9 @@ Describe 'Project validation' {
             'Set-AtlassianPSModuleManifestVersion'
             'Sync-AtlassianPSScriptAnalyzerSettings'
             'Test-AtlassianPSModulePackage'
+            'Test-AtlassianPSApiOperationInventory'
+            'Test-AtlassianPSApiResponseHeader'
+            'Test-AtlassianPSApiSunset'
             'Update-AtlassianPSDependencyReference'
             'Update-AtlassianPSExternalHelp'
             'Update-AtlassianPSModuleManifestExports'

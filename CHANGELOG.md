@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added shared API operation-inventory validation, redacted response-header assertions, sunset failure thresholds, and deterministic scheduled-canary result formatting.
 - Added a local downstream compatibility runner that tests a candidate Standards artifact against the four product repositories without publishing, changing dependency pins, or forwarding secret environment variables.
 - Added a trusted, `ShouldProcess`-aware transaction for updating a downstream Standards dependency and every matching setup-action commit pin with version-to-tag reconciliation and rollback.
 

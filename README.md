@@ -13,6 +13,7 @@ Exported helpers cover:
 - test bootstrap helpers (`Resolve-ProjectRoot`, `Resolve-ModuleSource`, `Initialize-ModuleTestEnvironment`)
 - integration-test helpers (`Import-DotEnvFile`)
 - dependency bootstrap and maintenance (`Install-DependencyRequirement`, `Update-DependencyReference`)
+- API inventory, header, sunset, and canary quality primitives
 
 ## Usage
 
@@ -31,6 +32,7 @@ They cover artifact copy, source merge, package validation, external help genera
 Repository build scripts should keep task orchestration local and readable.
 
 Detailed contracts and examples live in [`docs/BlueprintHelpers.md`](docs/BlueprintHelpers.md).
+API conformance and canary contracts live in [`docs/ApiQualityPrimitives.md`](docs/ApiQualityPrimitives.md).
 Downstream migration guidance lives in [`docs/DownstreamAdoption.md`](docs/DownstreamAdoption.md).
 Release flow guidance lives in [`docs/ReleaseBlueprint.md`](docs/ReleaseBlueprint.md).
 
