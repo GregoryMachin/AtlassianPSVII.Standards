@@ -52,11 +52,45 @@ Release flow guidance lives in [`docs/ReleaseBlueprint.md`](docs/ReleaseBlueprin
 
 Use `Tools/update.dependencies.ps1` to refresh pinned dependency versions in `Tools/build.requirements.psd1` and `AtlassianPS.Standards.psd1`. The default behavior is fail-fast on lookup errors; use `Update-AtlassianPSDependencyReference -AllowLookupFailure` only for explicit non-blocking/manual update runs.
 
+Update a downstream repository's Standards package and setup-action pins as one transaction:
+
+```powershell
+./Tools/update.dependencies.ps1 `
+    -TargetRepositoryRoot ../JiraPS `
+    -StandardsVersion 0.1.12 `
+    -SetupActionCommitSha <approved-40-character-sha>
+```
+
+The SHA is resolved from the trusted `AtlassianPS.Standards` `vX.Y.Z` tag and an explicitly supplied SHA must match it.
+Only `Tools/build.requirements.psd1` and commit-pinned `AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell` references below `.github/workflows` are eligible.
+Use `-WhatIf` to preview the complete file set.
+The update fails before writing when pins are missing or malformed and rolls back completed replacements if a later file cannot be replaced.
+
 ## Build, Lint, Test
 
 ```powershell
 Invoke-Build -Task Lint, Build, Test
 ```
+
+## Downstream Compatibility
+
+Test a local Standards candidate against the four downstream repositories without publishing or changing their dependency pins:
+
+```powershell
+Invoke-Build -Task Build
+./Tools/test.downstream.compatibility.ps1 `
+    -CandidateModulePath ./Release/AtlassianPS.Standards `
+    -WorkspaceRoot ..
+```
+
+The runner recognizes only `AtlassianPS.Configuration`, `JiraPS`, `JiraAgilePS`, and `ConfluencePS`.
+For each repository it stages an isolated copy of the candidate at that repository's pinned Standards version, then invokes only the exact `<Repository>.build.ps1` entrypoint.
+The fixed `Lint`, `Build`, and `Test` tasks run as separate invocations so each stage reloads the candidate while retaining build artifacts.
+It attempts every selected repository before reporting aggregate failures.
+
+Child processes receive an explicit environment allow-list rather than the caller's complete environment, so repository and Atlassian credentials are not forwarded.
+Captured output is redacted for authorization, cookie, token, password, secret, and API-key values.
+Missing repositories fail by default; use `-SkipMissingRepository` only when intentionally validating the subset available in a local workspace.
 
 ## Release
 

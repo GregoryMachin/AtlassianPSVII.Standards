@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added a local downstream compatibility runner that tests a candidate Standards artifact against the four product repositories without publishing, changing dependency pins, or forwarding secret environment variables.
+- Added a trusted, `ShouldProcess`-aware transaction for updating a downstream Standards dependency and every matching setup-action commit pin with version-to-tag reconciliation and rollback.
+
 ## v0.1.12 - 2026-06-18
 
 - Fixed continuous release version stamping so the source manifest version is updated in place without reformatting the manifest, release notes stay empty in source and are populated into the built artifact at publish time, and the publish step verifies the artifact version and release notes before publishing.

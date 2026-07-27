@@ -62,4 +62,40 @@ Export-ModuleMember -Function Update-DependencyReference
             & $harness.ScriptPath -SkipBuildRequirement -SkipManifestRequirement
         } | Should -Throw -ExpectedMessage '*simulated updater failure*'
     }
+
+    It 'delegates atomic Standards and workflow pin updates to the shared operation' {
+        $harness = Initialize-ToolScriptHarness -ScriptRelativePath 'Tools/update.dependencies.ps1' -ModuleContent @'
+function Update-StandardsDependencyPin {
+    [CmdletBinding()]
+    param(
+        [String]$RepositoryRoot,
+        [String]$Version,
+        [String]$SetupActionCommitSha,
+        [String[]]$WorkflowPath
+    )
+
+    [PSCustomObject]@{
+        RepositoryRoot       = $RepositoryRoot
+        Version              = $Version
+        SetupActionCommitSha = $SetupActionCommitSha
+        WorkflowPath         = $WorkflowPath
+    }
+}
+
+Export-ModuleMember -Function Update-StandardsDependencyPin
+'@
+        $targetRoot = Join-Path $TestDrive 'downstream repository'
+        $workflowPath = Join-Path $targetRoot '.github/workflows/ci.yml'
+
+        $result = & $harness.ScriptPath `
+            -TargetRepositoryRoot $targetRoot `
+            -StandardsVersion '0.1.12' `
+            -SetupActionCommitSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' `
+            -WorkflowPath $workflowPath
+
+        $result.RepositoryRoot | Should -Be $targetRoot
+        $result.Version | Should -Be '0.1.12'
+        $result.SetupActionCommitSha | Should -Be 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+        $result.WorkflowPath | Should -Be $workflowPath
+    }
 }
