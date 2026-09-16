@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Declared the source manifest's `FunctionsToExport` explicitly instead of `'*'` (Phase 9 Task 58), and made `Tests/Project.Tests.ps1`'s existing "exports only the intentional public command surface" test read its expected list from that manifest instead of a separately hardcoded array, so the manifest itself is now the single committed compatibility baseline: an unreviewed addition or removal of an exported command fails the test, and updating the manifest is the explicit approval step for an intentional change. Module behavior is unchanged, since `AtlassianPS.Standards.psm1` already restricted runtime exports to `Public/*.ps1` via `Export-ModuleMember`; only the source manifest's own declared surface was still an unrestricted wildcard.
 - Added reproducible release archives, SHA-256 checksums, dependency/source provenance, GitHub artifact attestations, and exact CI-tested artifact promotion.
 - Added shared API operation-inventory validation, redacted response-header assertions, sunset failure thresholds, and deterministic scheduled-canary result formatting.
 - Added a local downstream compatibility runner that tests a candidate Standards artifact against the four product repositories without publishing, changing dependency pins, or forwarding secret environment variables.

@@ -11,34 +11,22 @@
 
 Describe 'Project validation' {
     It 'exports only the intentional public command surface' {
+        # The source manifest's own FunctionsToExport (Task 58) is this module's committed
+        # compatibility baseline: an unreviewed addition or removal fails this test, and
+        # updating the manifest is the explicit approval step for an intentional change.
+        $manifestPath = Join-Path -Path $PSScriptRoot -ChildPath '../AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+        $manifestData = Import-PowerShellDataFile -Path $manifestPath
+        $prefix = [string]$manifestData.DefaultCommandPrefix
         $expectedCommands = @(
-            'ConvertTo-AtlassianPSApiCanaryResult'
-            'Copy-AtlassianPSModuleArtifacts'
-            'Get-AtlassianPSReleaseNotesFromChangelog'
-            'Import-AtlassianPSDotEnvFile'
-            'Initialize-AtlassianPSBuildEnvironment'
-            'Initialize-AtlassianPSModuleTestEnvironment'
-            'Install-AtlassianPSDependencyRequirement'
-            'Invoke-AtlassianPSLint'
-            'Invoke-AtlassianPSModuleTests'
-            'Join-AtlassianPSModuleSource'
-            'New-AtlassianPSModulePackage'
-            'New-AtlassianPSReleaseProvenance'
-            'Remove-AtlassianPSOrphanedExternalHelp'
-            'Resolve-AtlassianPSModuleSource'
-            'Resolve-AtlassianPSProjectRoot'
-            'Set-AtlassianPSModuleManifestVersion'
-            'Sync-AtlassianPSScriptAnalyzerSettings'
-            'Test-AtlassianPSModulePackage'
-            'Test-AtlassianPSReleaseProvenance'
-            'Test-AtlassianPSApiOperationInventory'
-            'Test-AtlassianPSApiResponseHeader'
-            'Test-AtlassianPSApiSunset'
-            'Update-AtlassianPSDependencyReference'
-            'Update-AtlassianPSExternalHelp'
-            'Update-AtlassianPSModuleManifestExports'
-            'Update-AtlassianPSStandardsDependencyPin'
-            'Write-AtlassianPSBuildInfo'
+            foreach ($baseName in $manifestData.FunctionsToExport) {
+                $parts = $baseName -split '-', 2
+                if ($parts.Count -eq 2 -and $prefix) {
+                    '{0}-{1}{2}' -f $parts[0], $prefix, $parts[1]
+                }
+                else {
+                    $baseName
+                }
+            }
         )
         $actualCommands = @(
             Get-Command -Module AtlassianPS.Standards -CommandType Function |

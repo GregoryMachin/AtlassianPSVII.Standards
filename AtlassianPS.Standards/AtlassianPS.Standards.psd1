@@ -11,7 +11,35 @@
         @{ ModuleName = 'PSScriptAnalyzer'; RequiredVersion = '1.25.0' }
     )
 
-    FunctionsToExport    = '*'
+    FunctionsToExport    = @(
+        'ConvertTo-ApiCanaryResult'
+        'Copy-ModuleArtifacts'
+        'Get-ReleaseNotesFromChangelog'
+        'Import-DotEnvFile'
+        'Initialize-BuildEnvironment'
+        'Initialize-ModuleTestEnvironment'
+        'Install-DependencyRequirement'
+        'Invoke-Lint'
+        'Invoke-ModuleTests'
+        'Join-ModuleSource'
+        'New-ModulePackage'
+        'New-ReleaseProvenance'
+        'Remove-OrphanedExternalHelp'
+        'Resolve-ModuleSource'
+        'Resolve-ProjectRoot'
+        'Set-ModuleManifestVersion'
+        'Sync-ScriptAnalyzerSettings'
+        'Test-ApiOperationInventory'
+        'Test-ApiResponseHeader'
+        'Test-ApiSunset'
+        'Test-ModulePackage'
+        'Test-ReleaseProvenance'
+        'Update-DependencyReference'
+        'Update-ExternalHelp'
+        'Update-ModuleManifestExports'
+        'Update-StandardsDependencyPin'
+        'Write-BuildInfo'
+    )
     DefaultCommandPrefix = 'AtlassianPS'
     FileList             = @(
         'PSScriptAnalyzerSettings.psd1'
