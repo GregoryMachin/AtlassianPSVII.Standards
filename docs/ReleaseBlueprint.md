@@ -79,11 +79,11 @@ workflow consumes these Standards actions: `setup-powershell`, `plan-merged-rele
 ```yaml
 - name: Validate release tag
   id: release_ref
-  uses: AtlassianPS/AtlassianPS.Standards/.github/actions/resolve-release-tag@<standards-sha> # v0.1.11
+  uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/resolve-release-tag@<standards-sha> # v0.1.11
 
-- uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@<standards-sha> # v0.1.11
+- uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/setup-powershell@<standards-sha> # v0.1.11
 
-- uses: AtlassianPS/AtlassianPS.Standards/.github/actions/build-release-notes@<standards-sha> # v0.1.11
+- uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/build-release-notes@<standards-sha> # v0.1.11
   id: release_notes
   with:
     release-version: ${{ steps.release_ref.outputs.release_tag }}
@@ -253,7 +253,7 @@ jobs:
     name: Release Intent
     runs-on: ubuntu-latest
     steps:
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/validate-release-intent@<standards-sha>
+      - uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/validate-release-intent@<standards-sha>
 ```
 
 The workflow intentionally runs on `pull_request_target` and must not check out or execute pull request code.
@@ -339,7 +339,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Validate release intent
-        uses: AtlassianPS/AtlassianPS.Standards/.github/actions/validate-release-intent@<standards-sha> # vX.Y.Z
+        uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/validate-release-intent@<standards-sha> # vX.Y.Z
 ```
 
 Do not check out pull request code in this workflow.
@@ -397,7 +397,7 @@ jobs:
 
       - name: Plan release
         id: plan
-        uses: AtlassianPS/AtlassianPS.Standards/.github/actions/plan-merged-release@<standards-sha> # vX.Y.Z
+        uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/plan-merged-release@<standards-sha> # vX.Y.Z
         with:
           commit-sha: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || '' }}
           release-impact: ${{ github.event_name == 'workflow_dispatch' && inputs.release_impact || '' }}
@@ -415,11 +415,11 @@ jobs:
 
       - name: Prepare release changelog
         if: steps.plan.outputs.should_release == 'true'
-        uses: AtlassianPS/AtlassianPS.Standards/.github/actions/prepare-release-changelog@<standards-sha> # vX.Y.Z
+        uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/prepare-release-changelog@<standards-sha> # vX.Y.Z
         with:
           release-version: ${{ steps.plan.outputs.release_tag }}
 
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@<standards-sha> # vX.Y.Z
+      - uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/setup-powershell@<standards-sha> # vX.Y.Z
         if: steps.plan.outputs.should_release == 'true'
 
       - name: Stamp source manifest version
@@ -429,7 +429,7 @@ jobs:
 
       - name: Commit release metadata
         if: steps.plan.outputs.should_release == 'true'
-        uses: AtlassianPS/AtlassianPS.Standards/.github/actions/commit-release-metadata@<standards-sha> # vX.Y.Z
+        uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/commit-release-metadata@<standards-sha> # vX.Y.Z
         with:
           release-tag: ${{ steps.plan.outputs.release_tag }}
           manifest-path: <ModuleName>/<ModuleName>.psd1
@@ -470,7 +470,7 @@ jobs:
           path: ./VerifiedRelease/
           if_no_artifact_found: fail
 
-      - uses: AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell@<standards-sha> # vX.Y.Z
+      - uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/setup-powershell@<standards-sha> # vX.Y.Z
 
       - name: Verify checksums and provenance identity
         shell: pwsh
@@ -500,19 +500,19 @@ jobs:
         run: Expand-Archive -LiteralPath ./VerifiedRelease/<ModuleName>.zip -DestinationPath ./Publish
 
       - name: Create annotated release tag
-        uses: AtlassianPS/AtlassianPS.Standards/.github/actions/create-release-tag@<standards-sha> # vX.Y.Z
+        uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/create-release-tag@<standards-sha> # vX.Y.Z
         with:
           tag: ${{ steps.prepared_release.outputs.release_tag }}
 
       - name: Resolve release ref
         id: release_ref
-        uses: AtlassianPS/AtlassianPS.Standards/.github/actions/resolve-release-tag@<standards-sha> # vX.Y.Z
+        uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/resolve-release-tag@<standards-sha> # vX.Y.Z
         with:
           tag: ${{ steps.prepared_release.outputs.release_tag }}
 
       - name: Build release notes
         id: release_notes
-        uses: AtlassianPS/AtlassianPS.Standards/.github/actions/build-release-notes@<standards-sha> # vX.Y.Z
+        uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/build-release-notes@<standards-sha> # vX.Y.Z
         with:
           release-version: ${{ steps.release_ref.outputs.release_tag }}
 
@@ -599,7 +599,7 @@ If no release section exists yet, test the parser by preparing a temporary chang
 Before creating a release tag, prepare the changelog section, run the module's normal build/test gate, and verify release metadata for the exact tag.
 
 ```yaml
-- uses: AtlassianPS/AtlassianPS.Standards/.github/actions/prepare-release-changelog@<standards-sha>
+- uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/prepare-release-changelog@<standards-sha>
   with:
     release-version: vX.Y.Z
 ```

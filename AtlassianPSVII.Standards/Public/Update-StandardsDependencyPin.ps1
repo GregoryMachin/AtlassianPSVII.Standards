@@ -63,7 +63,7 @@
     )
 
     $moduleName = 'AtlassianPSVII.Standards'
-    $actionCoordinate = 'AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell'
+    $actionCoordinate = 'GregoryMachin/AtlassianPSVII.Standards/.github/actions/setup-powershell'
 
     function Resolve-PathBelowRoot {
         [CmdletBinding()]
@@ -187,7 +187,7 @@
     $setupPinCount = 0
     $untrustedSetupPattern = '(?im)uses:\s*(?<coordinate>[^\s@]+/setup-powershell)@'
     $trustedPinPattern = [Text.RegularExpressions.Regex]::new(
-        '(?im)^(?<prefix>\s*-\s*uses:\s*AtlassianPS/AtlassianPS\.Standards/\.github/actions/setup-powershell@)' +
+        '(?im)^(?<prefix>\s*-\s*uses:\s*GregoryMachin/AtlassianPSVII\.Standards/\.github/actions/setup-powershell@)' +
         '(?<sha>[0-9a-f]{40})(?<trailer>[ \t]*(?:#[^\r\n]*)?)(?=\r?$)'
     )
 

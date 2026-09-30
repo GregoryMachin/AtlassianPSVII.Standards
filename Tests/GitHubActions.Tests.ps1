@@ -49,7 +49,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $previousChangelogDirectory = $env:CHANGELOG_DIRECTORY
         $previousOutput = $env:GITHUB_OUTPUT
         try {
-            $env:GITHUB_REPOSITORY = 'AtlassianPS/AtlassianPS.Standards'
+            $env:GITHUB_REPOSITORY = 'GregoryMachin/AtlassianPSVII.Standards'
             $env:COMMIT_SHA = 'abc123'
             $env:CHANGELOG_DIRECTORY = '.changelog'
             $env:GITHUB_OUTPUT = $outputPath
@@ -97,7 +97,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $previousChangelogDirectory = $env:CHANGELOG_DIRECTORY
         $previousOutput = $env:GITHUB_OUTPUT
         try {
-            $env:GITHUB_REPOSITORY = 'AtlassianPS/AtlassianPS.Standards'
+            $env:GITHUB_REPOSITORY = 'GregoryMachin/AtlassianPSVII.Standards'
             $env:COMMIT_SHA = 'def456'
             $env:CHANGELOG_DIRECTORY = '.changelog'
             $env:GITHUB_OUTPUT = $outputPath
@@ -138,7 +138,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
             git tag -a v2.3.4 -m v2.3.4
             Remove-Item -LiteralPath $outputPath -Force -ErrorAction SilentlyContinue
 
-            $env:GITHUB_REPOSITORY = 'AtlassianPS/AtlassianPS.Standards'
+            $env:GITHUB_REPOSITORY = 'GregoryMachin/AtlassianPSVII.Standards'
             $env:RELEASE_IMPACT = 'patch'
             $env:GITHUB_OUTPUT = $outputPath
 
@@ -189,7 +189,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $previousPrereleaseLabel = $env:PRERELEASE_LABEL
         $previousOutput = $env:GITHUB_OUTPUT
         try {
-            $env:GITHUB_REPOSITORY = 'AtlassianPS/AtlassianPS.Standards'
+            $env:GITHUB_REPOSITORY = 'GregoryMachin/AtlassianPSVII.Standards'
             $env:RELEASE_IMPACT = 'minor'
             $env:PRERELEASE_LABEL = 'rc-2'
             $env:GITHUB_OUTPUT = $outputPath
@@ -245,7 +245,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $previousChangelogDirectory = $env:CHANGELOG_DIRECTORY
         $previousOutput = $env:GITHUB_OUTPUT
         try {
-            $env:GITHUB_REPOSITORY = 'AtlassianPS/AtlassianPS.Standards'
+            $env:GITHUB_REPOSITORY = 'GregoryMachin/AtlassianPSVII.Standards'
             $env:COMMIT_SHA = 'ghi789'
             $env:CHANGELOG_DIRECTORY = '.changelog'
             $env:GITHUB_OUTPUT = $outputPath
@@ -356,7 +356,8 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $workflow | Should -Match '(?ms)^permissions:\s+actions: read\s+contents: read'
         $workflow | Should -Match '(?ms)^  publish:.*?environment: release.*?permissions:\s+actions: read\s+attestations: read\s+contents: write'
         $workflow | Should -Match '(?ms)^  publish:.*?secrets\.PSGALLERY_API_KEY'
-        $workflow | Should -Match '(?ms)^  publish:.*?secrets\.HOMEPAGE_PAT'
+        # The fork has no homepage to notify (backlog PSVII-5), so publish must not need HOMEPAGE_PAT.
+        $workflow | Should -Not -Match 'HOMEPAGE_PAT'
     }
 
     It 'does not keep a non-idempotent tag release workflow beside continuous release' {
@@ -408,7 +409,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $previousOutput = $env:GITHUB_OUTPUT
         try {
             $env:PR_NUMBER = '42'
-            $env:GITHUB_REPOSITORY = 'AtlassianPS/AtlassianPS.Standards'
+            $env:GITHUB_REPOSITORY = 'GregoryMachin/AtlassianPSVII.Standards'
             $env:CHANGELOG_DIRECTORY = '.changelog'
             $env:GITHUB_OUTPUT = $outputPath
 
@@ -490,7 +491,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $previousOutput = $env:GITHUB_OUTPUT
         try {
             $env:PR_NUMBER = '42'
-            $env:GITHUB_REPOSITORY = 'AtlassianPS/AtlassianPS.Standards'
+            $env:GITHUB_REPOSITORY = 'GregoryMachin/AtlassianPSVII.Standards'
             $env:CHANGELOG_DIRECTORY = '.changelog'
             $env:GITHUB_OUTPUT = $outputPath
 

@@ -92,7 +92,7 @@ Use the shared `build-release-notes` action in GitHub workflows so repositories 
 ```yaml
 - name: Build release notes from changelog
   id: release_notes
-  uses: AtlassianPS/AtlassianPS.Standards/.github/actions/build-release-notes@<standards-sha>
+  uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/build-release-notes@<standards-sha>
   with:
     release-version: ${{ steps.release_ref.outputs.release_tag }}
 
@@ -130,7 +130,7 @@ Keep source release notes empty; the build derives them from the committed chang
 For manual release preparation, commit the same files before tagging the release.
 
 ```yaml
-- uses: AtlassianPS/AtlassianPS.Standards/.github/actions/prepare-release-changelog@<standards-sha>
+- uses: GregoryMachin/AtlassianPSVII.Standards/.github/actions/prepare-release-changelog@<standards-sha>
   with:
     release-version: v1.2.3
 ```

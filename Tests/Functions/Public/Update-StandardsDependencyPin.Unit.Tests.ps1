@@ -30,7 +30,7 @@ BeforeAll {
             [Switch]$OmitActionPin,
 
             [Parameter()]
-            [String]$ActionCoordinate = 'AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell'
+            [String]$ActionCoordinate = 'GregoryMachin/AtlassianPSVII.Standards/.github/actions/setup-powershell'
         )
 
         $resolvedTestDrive = [IO.Path]::GetFullPath($TestDrive).TrimEnd(

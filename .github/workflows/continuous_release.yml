@@ -189,12 +189,3 @@ jobs:
           prerelease: ${{ contains(steps.release_ref.outputs.release_tag, '-alpha') || contains(steps.release_ref.outputs.release_tag, '-beta') || contains(steps.release_ref.outputs.release_tag, '-rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Notify homepage to update submodule
-        if: ${{ !contains(steps.release_ref.outputs.release_tag, '-alpha') && !contains(steps.release_ref.outputs.release_tag, '-beta') && !contains(steps.release_ref.outputs.release_tag, '-rc') }}
-        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
-        with:
-          token: ${{ secrets.HOMEPAGE_PAT }}
-          repository: AtlassianPS/AtlassianPS.github.io
-          event-type: module-release
-          client-payload: '{"module": "AtlassianPSVII.Standards", "version": "${{ steps.release_ref.outputs.release_tag }}"}'

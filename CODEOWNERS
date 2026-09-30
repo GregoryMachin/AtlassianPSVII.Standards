@@ -1,6 +1,6 @@
-.github/workflows               @atlassianps/ci-managers
-JiraPSVII.build.ps1                @atlassianps/ci-managers
-PPSScriptAnalyzerSettings.psd1  @atlassianps/ci-managers
-Tools/                          @atlassianps/ci-managers
+.github/workflows               @GregoryMachin
+JiraPSVII.build.ps1                @GregoryMachin
+PPSScriptAnalyzerSettings.psd1  @GregoryMachin
+Tools/                          @GregoryMachin
 
-*                               @atlassianps/maintainers
+*                               @GregoryMachin

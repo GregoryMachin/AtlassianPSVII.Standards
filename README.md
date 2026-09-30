@@ -1,5 +1,7 @@
 # AtlassianPSVII.Standards
 
+> **Fork notice:** AtlassianPSVII.Standards is a fork of [AtlassianPS.Standards](https://github.com/AtlassianPS/AtlassianPS.Standards) by the [AtlassianPS](https://github.com/AtlassianPS) team (MIT License), renamed and maintained by Gregory Machin. "VII" is only part of the name: it supports Windows PowerShell 5.1 and PowerShell 7.4+, and can be loaded side by side with the upstream module.
+
 `AtlassianPSVII.Standards` is a shared toolbag module that ships the AtlassianPSVII PSScriptAnalyzer baseline and reusable build helpers for AtlassianPSVII repositories.
 
 Exported helpers cover:
@@ -64,7 +66,7 @@ Update a downstream repository's Standards package and setup-action pins as one 
 ```
 
 The SHA is resolved from the trusted `AtlassianPSVII.Standards` `vX.Y.Z` tag and an explicitly supplied SHA must match it.
-Only `Tools/build.requirements.psd1` and commit-pinned `AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell` references below `.github/workflows` are eligible.
+Only `Tools/build.requirements.psd1` and commit-pinned `GregoryMachin/AtlassianPSVII.Standards/.github/actions/setup-powershell` references below `.github/workflows` are eligible.
 Use `-WhatIf` to preview the complete file set.
 The update fails before writing when pins are missing or malformed and rolls back completed replacements if a later file cannot be replaced.
 

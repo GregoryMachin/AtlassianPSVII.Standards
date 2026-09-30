@@ -4,7 +4,7 @@
     GUID                 = '4453c019-c7cb-4a8f-8074-a21380db71f3'
     Author               = 'AtlassianPSVII'
     CompanyName          = 'AtlassianPSVII'
-    Copyright            = '(c) 2026 AtlassianPSVII. All rights reserved.'
+    Copyright            = '(c) 2026 AtlassianPS; (c) 2026 Gregory Machin. MIT License.'
     Description          = 'Shared analyzer settings and standards utilities for AtlassianPSVII modules.'
     PowerShellVersion    = '5.1'
     RequiredModules      = @(
@@ -56,8 +56,8 @@
                 'Standards'
             )
             Prerelease   = ''
-            LicenseUri   = 'https://github.com/AtlassianPS/AtlassianPS.Standards/blob/master/LICENSE'
-            ProjectUri   = 'https://github.com/AtlassianPS/AtlassianPS.Standards'
+            LicenseUri   = 'https://github.com/GregoryMachin/AtlassianPSVII.Standards/blob/main/LICENSE'
+            ProjectUri   = 'https://github.com/GregoryMachin/AtlassianPSVII.Standards'
             ReleaseNotes = ''
         }
     }
