@@ -1,6 +1,6 @@
 ﻿@{
     RootModule           = 'AtlassianPSVII.Standards.psm1'
-    ModuleVersion        = '0.2.0'
+    ModuleVersion        = '1.0.0'
     GUID                 = '4453c019-c7cb-4a8f-8074-a21380db71f3'
     Author               = 'AtlassianPSVII'
     CompanyName          = 'AtlassianPSVII'

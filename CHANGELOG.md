@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## v1.0.0 - 2026-10-01
+
+- **Breaking:** forked from `AtlassianPS.Standards` 0.2.0 and renamed to `AtlassianPSVII.Standards`: new module name and GUID, and the command prefix is now `AtlassianPSVII` (for example `Invoke-AtlassianPSVIILint`, `Get-AtlassianPSVIIDependencyReference`). Downstream repositories pin `AtlassianPSVII.Standards` 1.0.0 from the sibling `.local-modules/` directory.
+
 ## v0.2.0 - 2026-09-17
 
 - Declared the source manifest's `FunctionsToExport` explicitly instead of `'*'` (Phase 9 Task 58), and made `Tests/Project.Tests.ps1`'s existing "exports only the intentional public command surface" test read its expected list from that manifest instead of a separately hardcoded array, so the manifest itself is now the single committed compatibility baseline: an unreviewed addition or removal of an exported command fails the test, and updating the manifest is the explicit approval step for an intentional change. Module behavior is unchanged, since `AtlassianPSVII.Standards.psm1` already restricted runtime exports to `Public/*.ps1` via `Export-ModuleMember`; only the source manifest's own declared surface was still an unrestricted wildcard.
