@@ -3,7 +3,7 @@
     [OutputType([Version])]
     param(
         [Parameter()]
-        [Version]$MinimumVersion = [Version]'5.7.0',
+        [Version]$MinimumVersion = [Version]'6.2.0',
 
         [Parameter()]
         [Version]$MaximumVersion
@@ -15,7 +15,10 @@
         if ($loadedPester) {
             Get-Module -Name 'Pester' | Remove-Module -Force -ErrorAction SilentlyContinue
         }
-        Import-Module -Name 'Pester' -RequiredVersion $pesterVersionToUse -ErrorAction Stop
+        # -Global: imported from inside this module, Pester would otherwise land in this module's
+        # session state only, and test code (e.g. Mock inside InModuleScope) would auto-load a
+        # second, different Pester version from PSModulePath.
+        Import-Module -Name 'Pester' -RequiredVersion $pesterVersionToUse -Global -ErrorAction Stop
     }
 
     return $pesterVersionToUse

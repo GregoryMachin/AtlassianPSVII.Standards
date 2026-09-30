@@ -1,4 +1,4 @@
-﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "5.7"; MaximumVersion = "5.999" }
+﻿#requires -modules @{ ModuleName = "Pester"; ModuleVersion = "6.2"; MaximumVersion = "6.999" }
 
 BeforeAll {
     $script:runnerPath = Join-Path -Path $PSScriptRoot -ChildPath '../../Tools/test.downstream.compatibility.ps1'

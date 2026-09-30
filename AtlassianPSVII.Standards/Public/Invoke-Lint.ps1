@@ -26,7 +26,10 @@
         [String]$PesterVerbosity = 'Normal',
 
         [Parameter()]
-        [Version]$MinimumPesterVersion = [Version]'5.7.0',
+        [Version]$MinimumPesterVersion = [Version]'6.2.0',
+
+        [Parameter()]
+        [Version]$MaximumPesterVersion = [Version]'6.999',
 
         [Parameter()]
         [ValidateSet('Error', 'Warning', 'Information', 'ParseError')]
@@ -137,10 +140,10 @@
             & $writeLintMessage -Color Gray -Message 'Running style tests...'
             $pesterVersion = Get-Module -Name 'Pester' -ListAvailable |
                 Sort-Object -Property Version -Descending |
-                Where-Object { $_.Version -ge $MinimumPesterVersion } |
+                Where-Object { $_.Version -ge $MinimumPesterVersion -and $_.Version -le $MaximumPesterVersion } |
                 Select-Object -First 1 -ExpandProperty Version
             if (-not $pesterVersion) {
-                throw "Pester version $MinimumPesterVersion or newer is required, but no installed version satisfies that range."
+                throw "Pester version between $MinimumPesterVersion and $MaximumPesterVersion is required, but no installed version satisfies that range."
             }
 
             $loadedPester = Get-Module -Name 'Pester' |
@@ -150,7 +153,7 @@
                 if ($loadedPester) {
                     Get-Module -Name 'Pester' | Remove-Module -Force -ErrorAction SilentlyContinue
                 }
-                Import-Module -Name 'Pester' -RequiredVersion $pesterVersion -ErrorAction Stop
+                Import-Module -Name 'Pester' -RequiredVersion $pesterVersion -Global -ErrorAction Stop
             }
 
             $pesterConfigHash = @{
