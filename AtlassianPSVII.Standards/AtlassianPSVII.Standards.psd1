@@ -56,7 +56,7 @@
                 'Standards'
             )
             Prerelease   = ''
-            LicenseUri   = 'https://github.com/GregoryMachin/AtlassianPSVII.Standards/blob/main/LICENSE'
+            LicenseUri   = 'https://github.com/GregoryMachin/AtlassianPSVII.Standards/blob/master/LICENSE'
             ProjectUri   = 'https://github.com/GregoryMachin/AtlassianPSVII.Standards'
             ReleaseNotes = ''
         }
