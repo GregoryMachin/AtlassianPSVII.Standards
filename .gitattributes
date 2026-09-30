@@ -1,0 +1,22 @@
+# Keep Git's index normalization independent from each developer's global
+# core.autocrlf setting. The working tree line endings below remain explicit.
+* text=auto eol=lf
+
+# Keep attributes files LF so Git can parse them consistently before applying
+# later path-specific CRLF rules.
+*.gitattributes text eol=lf
+
+# Set merge behavior for the changelog
+CHANGELOG.md merge=union
+
+# Declare files that will always have CRLF line endings on checkout.
+*.md text eol=crlf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+*.psd1 text eol=crlf
+*.psc1 text eol=crlf
+*.ps1xml text eol=crlf
+*.clixml text eol=crlf
+*.xml text eol=crlf
+*.txt text eol=crlf
+*.cs text eol=crlf
