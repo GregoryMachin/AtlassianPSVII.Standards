@@ -111,9 +111,11 @@
         $testResults = Invoke-Pester @invokePesterParams
     }
 
+    # FailedContainersCount covers test files that fail discovery (e.g. an unsatisfied
+    # #requires); their tests are never counted in FailedCount.
     $containerFailureCount = 0
-    if ($testResults.PSObject.Properties.Name -contains 'ContainersFailedCount') {
-        $containerFailureCount = [int]$testResults.ContainersFailedCount
+    if ($testResults.PSObject.Properties.Name -contains 'FailedContainersCount') {
+        $containerFailureCount = [int]$testResults.FailedContainersCount
     }
 
     if (($testResults.FailedCount -gt 0) -or ($containerFailureCount -gt 0)) {

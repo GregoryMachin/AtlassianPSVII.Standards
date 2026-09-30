@@ -169,8 +169,13 @@
             $testResults = Invoke-Pester -Configuration $pesterConfig
 
             $styleFailures = [int]$testResults.FailedCount
+            $styleContainerFailures = [int]$testResults.FailedContainersCount
             if ($styleFailures -gt 0) {
                 $failures.Add("$styleFailures style test(s) failed.")
+            }
+            elseif ($styleContainerFailures -gt 0) {
+                $styleFailures = $styleContainerFailures
+                $failures.Add("$styleContainerFailures style test file(s) failed to run.")
             }
             else {
                 & $writeLintMessage -Color Green -Message 'Style tests: passed.'

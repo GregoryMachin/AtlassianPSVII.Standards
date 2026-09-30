@@ -24,7 +24,7 @@ Describe 'Invoke-ModuleTests' {
             Mock -CommandName Invoke-Pester -MockWith {
                 [PSCustomObject]@{
                     FailedCount           = 0
-                    ContainersFailedCount = 0
+                    FailedContainersCount = 0
                 }
             }
 
@@ -55,11 +55,33 @@ Describe 'Invoke-ModuleTests' {
             Mock -CommandName Invoke-Pester -MockWith {
                 [PSCustomObject]@{
                     FailedCount           = 1
-                    ContainersFailedCount = 0
+                    FailedContainersCount = 0
                 }
             }
 
             { Invoke-ModuleTests -TestPath $TestPath } | Should -Throw -ExpectedMessage 'Pester reported failures*'
+        }
+    }
+
+    It 'throws when a test file fails discovery even though no test failed' {
+        $testsPath = Join-Path -Path $TestDrive -ChildPath 'tests-failed-container'
+        $null = New-Item -Path $testsPath -ItemType Directory -Force
+
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
+            TestPath = $testsPath
+        } {
+            param($TestPath)
+
+            Mock -CommandName Import-PesterVersion -MockWith {}
+            Mock -CommandName New-PesterConfiguration -MockWith { param($Hashtable) $Hashtable }
+            Mock -CommandName Invoke-Pester -MockWith {
+                [PSCustomObject]@{
+                    FailedCount           = 0
+                    FailedContainersCount = 1
+                }
+            }
+
+            { Invoke-ModuleTests -TestPath $TestPath } | Should -Throw -ExpectedMessage 'Pester reported failures. Failed tests: 0; failed containers: 1.'
         }
     }
 

@@ -6,6 +6,7 @@
 
 - **Breaking:** forked from `AtlassianPS.Standards` 0.2.0 and renamed to `AtlassianPSVII.Standards`: new module name and GUID, and the command prefix is now `AtlassianPSVII` (for example `Invoke-AtlassianPSVIILint`, `Get-AtlassianPSVIIDependencyReference`). Downstream repositories pin `AtlassianPSVII.Standards` 1.0.0 from the sibling `.local-modules/` directory.
 - **Breaking:** moved to Pester 6: `Invoke-AtlassianPSVIILint`, `Invoke-AtlassianPSVIIModuleTests` and the style-test runner now select Pester 6.2.0 - 6.999 by default (new `-MaximumPesterVersion` on `Invoke-AtlassianPSVIILint`). The lint step previously took the newest installed Pester with no upper bound, so installing a new Pester major broke every build with an assembly clash (backlog PSVII-6); it is now bounded like the test runner. The build pins Pester 6.2.0.
+- Fixed `Invoke-AtlassianPSVIIModuleTests` and `Invoke-AtlassianPSVIILint` passing when a test file failed discovery (for example an unsatisfied `#requires`): the runner read a non-existent `ContainersFailedCount` property and lint only counted failed tests. Both now count Pester's `FailedContainersCount`.
 
 ## v0.2.0 - 2026-09-17
 
