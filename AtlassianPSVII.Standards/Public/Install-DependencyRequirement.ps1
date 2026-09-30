@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-Installs required module dependencies for AtlassianPS standards workflows.
+Installs required module dependencies for AtlassianPSVII standards workflows.
 
 .DESCRIPTION
 Reads dependency requirements from the build requirements data file and the
@@ -17,7 +17,7 @@ Path to the module manifest file containing RequiredModules entries.
 PSCustomObject
 
 .EXAMPLE
-Install-DependencyRequirement -BuildRequirementsPath './Tools/build.requirements.psd1' -ManifestPath './AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+Install-DependencyRequirement -BuildRequirementsPath './Tools/build.requirements.psd1' -ManifestPath './AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
 #>
 function Install-DependencyRequirement {
     [CmdletBinding(SupportsShouldProcess)]

@@ -7,15 +7,15 @@ BeforeAll {
 
 Describe 'Sync-ScriptAnalyzerSettings' {
     It 'is exported by the module' {
-        $command = Get-Command -Name 'Sync-AtlassianPSScriptAnalyzerSettings' -ErrorAction SilentlyContinue
+        $command = Get-Command -Name 'Sync-AtlassianPSVIIScriptAnalyzerSettings' -ErrorAction SilentlyContinue
         $command | Should -Not -BeNullOrEmpty
     }
 
     It 'copies shared analyzer settings to the destination file' {
         $destinationPath = Join-Path -Path $TestDrive -ChildPath 'PSScriptAnalyzerSettings.psd1'
-        $sourcePath = InModuleScope AtlassianPS.Standards { Get-ScriptAnalyzerSettingsPath }
+        $sourcePath = InModuleScope AtlassianPSVII.Standards { Get-ScriptAnalyzerSettingsPath }
 
-        $syncedPath = Sync-AtlassianPSScriptAnalyzerSettings -DestinationPath $destinationPath
+        $syncedPath = Sync-AtlassianPSVIIScriptAnalyzerSettings -DestinationPath $destinationPath
 
         $syncedPath | Should -Be (Resolve-Path -LiteralPath $destinationPath).ProviderPath
         (Test-Path -LiteralPath $destinationPath -PathType Leaf) | Should -BeTrue
@@ -26,7 +26,7 @@ Describe 'Sync-ScriptAnalyzerSettings' {
         $missingPath = Join-Path -Path $TestDrive -ChildPath 'missing.psd1'
         $destinationPath = Join-Path -Path $TestDrive -ChildPath 'PSScriptAnalyzerSettings.psd1'
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             DestinationPath = $destinationPath
             MissingPath     = $missingPath
         } {

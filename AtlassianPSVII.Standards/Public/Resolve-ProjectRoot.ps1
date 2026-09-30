@@ -18,7 +18,7 @@
         String. The resolved repository root path.
 
     .EXAMPLE
-        Resolve-AtlassianPSProjectRoot -StartPath $PSScriptRoot
+        Resolve-AtlassianPSVIIProjectRoot -StartPath $PSScriptRoot
 
         Resolves the repository root for a test file or helper script.
     #>

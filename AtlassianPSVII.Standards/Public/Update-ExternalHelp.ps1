@@ -6,7 +6,7 @@
     .DESCRIPTION
         Generates command MAML and about-topic help text for each locale under a
         docs root. The command MAML generation includes the PlatyPS v1 repairs used
-        by AtlassianPS modules: flatten nested module output, restore aliases,
+        by AtlassianPSVII modules: flatten nested module output, restore aliases,
         pipeline input, default values, and split example prose/code into the nodes
         consumed by Get-Help.
 
@@ -26,7 +26,7 @@
         None. Writes generated help files under ModulePath.
 
     .EXAMPLE
-        Update-AtlassianPSExternalHelp -DocsPath './docs' -ModulePath './JiraPS' -ModuleName 'JiraPS'
+        Update-AtlassianPSVIIExternalHelp -DocsPath './docs' -ModulePath './JiraPSVII' -ModuleName 'JiraPSVII'
 
         Generates command and about-topic help for each locale below docs.
     #>
@@ -80,7 +80,7 @@
                     throw "Expected MAML help file was not created: $mamlFile"
                 }
 
-                Repair-AtlassianPSMamlHelp -MamlFile $mamlFile -CommandHelp $commandHelp
+                Repair-AtlassianPSVIIMamlHelp -MamlFile $mamlFile -CommandHelp $commandHelp
             }
 
             $utf8Bom = [System.Text.UTF8Encoding]::new($true)

@@ -1,6 +1,6 @@
-# AI Instructions for AtlassianPS.Standards
+# AI Instructions for AtlassianPSVII.Standards
 
-`AtlassianPS.Standards` is a shared standards module consumed by other AtlassianPS repositories.
+`AtlassianPSVII.Standards` is a shared standards module consumed by other AtlassianPSVII repositories.
 Optimize for stable contracts, predictable build behavior, and low-noise changes.
 
 ## Instruction Hierarchy (Canonical)
@@ -23,13 +23,13 @@ If guidance conflicts, follow this file first.
 - Maintain compatibility with `PowerShellVersion = '5.1'` in the module manifest.
 - Keep cross-shell behavior safe for both Windows PowerShell 5.1 and PowerShell 7.x (CI validates both).
 - Keep dependency versions pinned and synchronized between:
-  - `AtlassianPS.Standards/AtlassianPS.Standards.psd1` (`RequiredModules`)
+  - `AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1` (`RequiredModules`)
   - `Tools/build.requirements.psd1`
 - Use semver tags (`vX.Y.Z`) for releases; treat any intentional breaking change as a major-version event.
 
 ## Release Flow
 
-- `docs/ReleaseBlueprint.md` is the canonical cross-repository release flow for AtlassianPS PowerShell modules.
+- `docs/ReleaseBlueprint.md` is the canonical cross-repository release flow for AtlassianPSVII PowerShell modules.
 - Prefer small Standards primitives and composite actions over copied release workflow logic in downstream repositories.
 - Pull requests should declare release intent with exactly one `release:*` label; user-facing changes also need a `changelog:*` label or a valid `.changelog/<pr-number>.<impact>.<type>.md` fragment.
 - Do not ask contributors to choose the final release version in normal PRs; release preparation batches merged intent later.
@@ -66,8 +66,8 @@ Before finalizing, always run the full pipeline: `Invoke-Build -Task Lint, Build
 
 ## Repository Map
 
-- Module source: `AtlassianPS.Standards/Public/`, `AtlassianPS.Standards/Private/`
-- Build entrypoint: `AtlassianPS.Standards.build.ps1`
+- Module source: `AtlassianPSVII.Standards/Public/`, `AtlassianPSVII.Standards/Private/`
+- Build entrypoint: `AtlassianPSVII.Standards.build.ps1`
 - Tests: `Tests/`
 - Dependency bootstrap: `Tools/setup.ps1`
 - CI workflows: `.github/workflows/`
@@ -78,7 +78,7 @@ Before finalizing, always run the full pipeline: `Invoke-Build -Task Lint, Build
 |------|-------------|----------------------|
 | GitHub Copilot | `.github/copilot-instructions.md` | `AGENTS.md`, `.github/ai-context/powershell-rules.md` |
 | GitHub Copilot (file rules) | `.github/instructions/standards-compatibility.instructions.md` | `.github/ai-context/powershell-rules.md` |
-| Cursor | `.cursor/rules/atlassianps-standards.mdc` | `AGENTS.md`, `.github/ai-context/powershell-rules.md` |
+| Cursor | `.cursor/rules/atlassianpsvii-standards.mdc` | `AGENTS.md`, `.github/ai-context/powershell-rules.md` |
 | Claude Code | `CLAUDE.md` | `AGENTS.md`, `.github/ai-context/powershell-rules.md` |
 | Gemini/Antigravity | `GEMINI.md` | `AGENTS.md`, `.github/ai-context/powershell-rules.md` |
 

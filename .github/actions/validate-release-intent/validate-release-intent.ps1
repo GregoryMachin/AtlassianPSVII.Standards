@@ -50,7 +50,7 @@ $isValid = $messages.Count -eq 0
     "changelog_type=$($intentState.ChangelogType)"
 ) | Add-Content -LiteralPath $env:GITHUB_OUTPUT
 
-$marker = '<!-- atlassianps-release-intent -->'
+$marker = '<!-- atlassianpsvii-release-intent -->'
 $commentQuery = '.[] | select(.user.login == "github-actions[bot]") | select(.body | startswith("{0}")) | .id' -f $marker
 $existingCommentId = gh api $issueCommentsRoute --paginate --jq $commentQuery |
     Select-Object -First 1

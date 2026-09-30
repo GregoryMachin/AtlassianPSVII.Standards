@@ -10,7 +10,7 @@ This file applies to all `.ps1` files. It references shared rules.
 
 ## Quick Reference
 
-1. **Shared contract stability** — preserve exported helper behavior for downstream AtlassianPS repositories.
+1. **Shared contract stability** — preserve exported helper behavior for downstream AtlassianPSVII repositories.
 2. **Dependency/version guardrails** — keep pinned dependency versions and semver expectations aligned with `AGENTS.md`.
 3. **Focused iteration** — run targeted tests when possible (for example `Invoke-Pester -Path 'Tests/Functions/Public/Invoke-Lint.Unit.Tests.ps1'`).
 4. **Final validation** — run `./Tools/setup.ps1` and `Invoke-Build -Task Lint, Build, Test` before finalizing.

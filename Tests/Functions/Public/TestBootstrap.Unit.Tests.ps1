@@ -12,7 +12,7 @@ Describe 'Resolve-ProjectRoot' {
         $null = New-Item -Path $nested -ItemType Directory -Force
         Set-Content -LiteralPath (Join-Path -Path $root -ChildPath 'CODEOWNERS') -Value '* @team'
 
-        $result = Resolve-AtlassianPSProjectRoot -StartPath $nested
+        $result = Resolve-AtlassianPSVIIProjectRoot -StartPath $nested
 
         $result | Should -Be $root
     }
@@ -22,7 +22,7 @@ Describe 'Resolve-ProjectRoot' {
         $null = New-Item -Path $root -ItemType Directory -Force
 
         {
-            Resolve-AtlassianPSProjectRoot -StartPath $root
+            Resolve-AtlassianPSVIIProjectRoot -StartPath $root
         } | Should -Throw -ExpectedMessage "Could not find project root marker*"
     }
 }
@@ -36,7 +36,7 @@ Describe 'Resolve-ModuleSource' {
         Set-Content -LiteralPath (Join-Path -Path $root -ChildPath 'CODEOWNERS') -Value '* @team'
         New-ModuleManifest -Path (Join-Path -Path $modulePath -ChildPath 'ExampleModule.psd1') -RootModule 'ExampleModule.psm1' -ModuleVersion '1.0.0'
 
-        $result = Resolve-AtlassianPSModuleSource -ModuleName 'ExampleModule' -StartPath $nested
+        $result = Resolve-AtlassianPSVIIModuleSource -ModuleName 'ExampleModule' -StartPath $nested
 
         $result | Should -Be (Join-Path -Path $modulePath -ChildPath 'ExampleModule.psd1')
     }
@@ -49,7 +49,7 @@ Describe 'Resolve-ModuleSource' {
         Set-Content -LiteralPath (Join-Path -Path $root -ChildPath 'CODEOWNERS') -Value '* @team'
         New-ModuleManifest -Path (Join-Path -Path $modulePath -ChildPath 'ExampleModule.psd1') -RootModule 'ExampleModule.psm1' -ModuleVersion '1.0.0'
 
-        $result = Resolve-AtlassianPSModuleSource -ModuleName 'ExampleModule' -StartPath $nested
+        $result = Resolve-AtlassianPSVIIModuleSource -ModuleName 'ExampleModule' -StartPath $nested
 
         $result | Should -Be (Join-Path -Path $modulePath -ChildPath 'ExampleModule.psd1')
     }
@@ -66,7 +66,7 @@ Describe 'Initialize-ModuleTestEnvironment' {
         New-ModuleManifest -Path (Join-Path -Path $modulePath -ChildPath 'ExampleModule.psd1') -RootModule 'ExampleModule.psm1' -ModuleVersion '1.0.0' -FunctionsToExport 'Get-ExampleValue'
 
         try {
-            $result = Initialize-AtlassianPSModuleTestEnvironment -ModuleName 'ExampleModule' -StartPath $nested -Global
+            $result = Initialize-AtlassianPSVIIModuleTestEnvironment -ModuleName 'ExampleModule' -StartPath $nested -Global
 
             $result | Should -Be (Join-Path -Path $modulePath -ChildPath 'ExampleModule.psd1')
             Get-Command -Name Get-ExampleValue -Module ExampleModule | Should -Not -BeNullOrEmpty

@@ -8,7 +8,7 @@ BeforeAll {
 
 Describe 'Invoke-Lint' {
     It 'is exported by the module' {
-        $lintCommand = Get-Command -Module 'AtlassianPS.Standards' |
+        $lintCommand = Get-Command -Module 'AtlassianPSVII.Standards' |
             Where-Object { $_.CommandType -eq 'Function' -and $_.Verb -eq 'Invoke' -and $_.Name -like '*Lint' } |
             Select-Object -First 1
 
@@ -17,12 +17,12 @@ Describe 'Invoke-Lint' {
 
     It 'runs through the exported prefixed command' {
         $projectPath = Join-Path -Path $TestDrive -ChildPath 'project-exported-command'
-        $modulePath = Join-Path -Path $projectPath -ChildPath 'AtlassianPS.Standards'
+        $modulePath = Join-Path -Path $projectPath -ChildPath 'AtlassianPSVII.Standards'
         $testsPath = Join-Path -Path $projectPath -ChildPath 'Tests'
         $toolsPath = Join-Path -Path $projectPath -ChildPath 'Tools'
         $stylePath = Join-Path -Path $testsPath -ChildPath 'Style.Tests.ps1'
         $settingsPath = Join-Path -Path $modulePath -ChildPath 'PSScriptAnalyzerSettings.psd1'
-        $buildScriptPath = Join-Path -Path $projectPath -ChildPath 'AtlassianPS.Standards.build.ps1'
+        $buildScriptPath = Join-Path -Path $projectPath -ChildPath 'AtlassianPSVII.Standards.build.ps1'
 
         $null = New-Item -Path $modulePath -ItemType Directory -Force
         $null = New-Item -Path $testsPath -ItemType Directory -Force
@@ -31,7 +31,7 @@ Describe 'Invoke-Lint' {
         Set-Content -LiteralPath $settingsPath -Value '@{ IncludeRules = @() }'
         Set-Content -LiteralPath $buildScriptPath -Value '$null = $true'
 
-        $result = Invoke-AtlassianPSLint `
+        $result = Invoke-AtlassianPSVIILint `
             -ProjectPath $projectPath `
             -ModulePath $modulePath `
             -BuildScriptPath $buildScriptPath `
@@ -45,11 +45,11 @@ Describe 'Invoke-Lint' {
 
     It 'fails fast when Pester is below the minimum version' {
         $projectPath = Join-Path -Path $TestDrive -ChildPath 'project-old-pester'
-        $modulePath = Join-Path -Path $projectPath -ChildPath 'AtlassianPS.Standards'
+        $modulePath = Join-Path -Path $projectPath -ChildPath 'AtlassianPSVII.Standards'
         $testsPath = Join-Path -Path $projectPath -ChildPath 'Tests'
         $stylePath = Join-Path -Path $testsPath -ChildPath 'Style.Tests.ps1'
         $settingsPath = Join-Path -Path $modulePath -ChildPath 'PSScriptAnalyzerSettings.psd1'
-        $buildScriptPath = Join-Path -Path $projectPath -ChildPath 'AtlassianPS.Standards.build.ps1'
+        $buildScriptPath = Join-Path -Path $projectPath -ChildPath 'AtlassianPSVII.Standards.build.ps1'
 
         $null = New-Item -Path $modulePath -ItemType Directory -Force
         $null = New-Item -Path $testsPath -ItemType Directory -Force
@@ -57,7 +57,7 @@ Describe 'Invoke-Lint' {
         Set-Content -LiteralPath $settingsPath -Value '@{ IncludeRules = @() }'
         Set-Content -LiteralPath $buildScriptPath -Value '$null = $true'
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             ProjectPath     = $projectPath
             ModulePath      = $modulePath
             BuildScriptPath = $buildScriptPath
@@ -73,12 +73,12 @@ Describe 'Invoke-Lint' {
 
     It 'returns lint counts when style tests and analyzer pass' {
         $projectPath = Join-Path -Path $TestDrive -ChildPath 'project'
-        $modulePath = Join-Path -Path $projectPath -ChildPath 'AtlassianPS.Standards'
+        $modulePath = Join-Path -Path $projectPath -ChildPath 'AtlassianPSVII.Standards'
         $testsPath = Join-Path -Path $projectPath -ChildPath 'Tests'
         $toolsPath = Join-Path -Path $projectPath -ChildPath 'Tools'
         $stylePath = Join-Path -Path $testsPath -ChildPath 'Style.Tests.ps1'
         $settingsPath = Join-Path -Path $modulePath -ChildPath 'PSScriptAnalyzerSettings.psd1'
-        $buildScriptPath = Join-Path -Path $projectPath -ChildPath 'AtlassianPS.Standards.build.ps1'
+        $buildScriptPath = Join-Path -Path $projectPath -ChildPath 'AtlassianPSVII.Standards.build.ps1'
 
         $null = New-Item -Path $modulePath -ItemType Directory -Force
         $null = New-Item -Path $testsPath -ItemType Directory -Force
@@ -87,7 +87,7 @@ Describe 'Invoke-Lint' {
         Set-Content -LiteralPath $settingsPath -Value '@{ IncludeRules = @() }'
         Set-Content -LiteralPath $buildScriptPath -Value '$null = $true'
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             ProjectPath     = $projectPath
             ModulePath      = $modulePath
             BuildScriptPath = $buildScriptPath
@@ -111,11 +111,11 @@ Describe 'Invoke-Lint' {
     It 'aggregates style and analyzer failures into one error' {
         $originalGitHubActions = $env:GITHUB_ACTIONS
         $projectPath = Join-Path -Path $TestDrive -ChildPath 'project-failure'
-        $modulePath = Join-Path -Path $projectPath -ChildPath 'AtlassianPS.Standards'
+        $modulePath = Join-Path -Path $projectPath -ChildPath 'AtlassianPSVII.Standards'
         $testsPath = Join-Path -Path $projectPath -ChildPath 'Tests'
         $stylePath = Join-Path -Path $testsPath -ChildPath 'Style.Tests.ps1'
         $settingsPath = Join-Path -Path $modulePath -ChildPath 'PSScriptAnalyzerSettings.psd1'
-        $buildScriptPath = Join-Path -Path $projectPath -ChildPath 'AtlassianPS.Standards.build.ps1'
+        $buildScriptPath = Join-Path -Path $projectPath -ChildPath 'AtlassianPSVII.Standards.build.ps1'
 
         $null = New-Item -Path $modulePath -ItemType Directory -Force
         $null = New-Item -Path $testsPath -ItemType Directory -Force
@@ -126,7 +126,7 @@ Describe 'Invoke-Lint' {
         try {
             $env:GITHUB_ACTIONS = $null
 
-            InModuleScope AtlassianPS.Standards -Parameters @{
+            InModuleScope AtlassianPSVII.Standards -Parameters @{
                 ProjectPath     = $projectPath
                 ModulePath      = $modulePath
                 BuildScriptPath = $buildScriptPath
@@ -141,7 +141,7 @@ Describe 'Invoke-Lint' {
                     @(
                         [PSCustomObject]@{
                             Severity   = 'Warning'
-                            ScriptName = 'AtlassianPS.Standards.build.ps1'
+                            ScriptName = 'AtlassianPSVII.Standards.build.ps1'
                             ScriptPath = $BuildScriptPath
                             Line       = 12
                             Column     = 4

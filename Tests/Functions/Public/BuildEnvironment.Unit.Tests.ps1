@@ -7,12 +7,12 @@ BeforeAll {
 
 Describe 'Get-BuildEnvironmentInfo' {
     It 'normalizes version input and builds manifest path from BH env vars' {
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             $env:BHBuildSystem = 'Local'
-            $env:BHProjectName = 'AtlassianPS.Standards'
+            $env:BHProjectName = 'AtlassianPSVII.Standards'
             $env:BHProjectPath = '/tmp/project'
-            $env:BHModulePath = '/tmp/project/AtlassianPS.Standards'
-            $env:BHPSModuleManifest = '/tmp/project/AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+            $env:BHModulePath = '/tmp/project/AtlassianPSVII.Standards'
+            $env:BHPSModuleManifest = '/tmp/project/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
             $env:BHBuildOutput = '/tmp/project/Release'
             $env:BHBranchName = 'feature/test'
             $env:BHCommitHash = 'abc123'
@@ -36,7 +36,7 @@ Describe 'Get-BuildEnvironmentInfo' {
     }
 
     It 'returns null built manifest path when build output data is missing' {
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             $env:BHBuildOutput = $null
             $env:BHProjectName = $null
 
@@ -59,8 +59,8 @@ Describe 'Initialize-BuildEnvironment' {
         $projectRoot = Join-Path -Path $TestDrive -ChildPath 'project'
         $null = New-Item -Path $projectRoot -ItemType Directory -Force
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
-            ProjectName = 'AtlassianPS.Standards'
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
+            ProjectName = 'AtlassianPSVII.Standards'
             ProjectPath = $projectRoot
         } {
             param($ProjectName, $ProjectPath)
@@ -84,10 +84,10 @@ Describe 'Initialize-BuildEnvironment' {
 
             $result = Initialize-BuildEnvironment -ProjectName $ProjectName -ProjectPath $ProjectPath -BuildOutputFolder 'out'
 
-            $env:BHProjectName | Should -Be 'AtlassianPS.Standards'
+            $env:BHProjectName | Should -Be 'AtlassianPSVII.Standards'
             $env:BHProjectPath | Should -Be (Resolve-Path -LiteralPath $ProjectPath).ProviderPath
             $env:BHBuildOutput | Should -Be (Join-Path -Path $env:BHProjectPath -ChildPath 'out')
-            $result.ProjectName | Should -Be 'AtlassianPS.Standards'
+            $result.ProjectName | Should -Be 'AtlassianPSVII.Standards'
         }
     }
 
@@ -95,7 +95,7 @@ Describe 'Initialize-BuildEnvironment' {
         $projectRoot = Join-Path -Path $TestDrive -ChildPath 'project-reset'
         $null = New-Item -Path $projectRoot -ItemType Directory -Force
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             ProjectPath = $projectRoot
         } {
             param($ProjectPath)
@@ -113,7 +113,7 @@ Describe 'Initialize-BuildEnvironment' {
             }
             Mock -CommandName Get-BuildEnvironmentInfo -MockWith { [PSCustomObject]@{} }
 
-            $null = Initialize-BuildEnvironment -ProjectName 'AtlassianPS.Standards' -ProjectPath $ProjectPath -ResetBuildEnvironmentVariables
+            $null = Initialize-BuildEnvironment -ProjectName 'AtlassianPSVII.Standards' -ProjectPath $ProjectPath -ResetBuildEnvironmentVariables
 
             $env:BHStaleVariable | Should -BeNullOrEmpty
         }

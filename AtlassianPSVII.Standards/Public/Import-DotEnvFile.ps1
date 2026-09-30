@@ -23,7 +23,7 @@
         emitted to avoid leaking secrets to build logs.
 
     .EXAMPLE
-        Import-AtlassianPSDotEnvFile -Path './.env' -ExcludeName 'CI'
+        Import-AtlassianPSVIIDotEnvFile -Path './.env' -ExcludeName 'CI'
 
         Loads process-scoped variables from .env while preserving CI-provided values.
     #>

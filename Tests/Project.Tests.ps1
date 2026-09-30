@@ -1,9 +1,9 @@
 ﻿BeforeAll {
-    $moduleManifestPath = if ($env:ATLASSIANPS_STANDARDS_MODULE_MANIFEST) {
-        $env:ATLASSIANPS_STANDARDS_MODULE_MANIFEST
+    $moduleManifestPath = if ($env:ATLASSIANPSVII_STANDARDS_MODULE_MANIFEST) {
+        $env:ATLASSIANPSVII_STANDARDS_MODULE_MANIFEST
     }
     else {
-        Join-Path -Path $PSScriptRoot -ChildPath '../AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+        Join-Path -Path $PSScriptRoot -ChildPath '../AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
     }
 
     Import-Module $moduleManifestPath -Force
@@ -14,7 +14,7 @@ Describe 'Project validation' {
         # The source manifest's own FunctionsToExport (Task 58) is this module's committed
         # compatibility baseline: an unreviewed addition or removal fails this test, and
         # updating the manifest is the explicit approval step for an intentional change.
-        $manifestPath = Join-Path -Path $PSScriptRoot -ChildPath '../AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+        $manifestPath = Join-Path -Path $PSScriptRoot -ChildPath '../AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
         $manifestData = Import-PowerShellDataFile -Path $manifestPath
         $prefix = [string]$manifestData.DefaultCommandPrefix
         $expectedCommands = @(
@@ -29,7 +29,7 @@ Describe 'Project validation' {
             }
         )
         $actualCommands = @(
-            Get-Command -Module AtlassianPS.Standards -CommandType Function |
+            Get-Command -Module AtlassianPSVII.Standards -CommandType Function |
                 Select-Object -ExpandProperty Name |
                 Sort-Object
         )
@@ -39,13 +39,13 @@ Describe 'Project validation' {
 
     It 'does not export internal helper commands' {
         $projectRoot = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath
-        $manifestPath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+        $manifestPath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
         $manifestData = Import-PowerShellDataFile -Path $manifestPath
         $privateFunctionNames = @(
-            Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards/Private/*.ps1') -ErrorAction SilentlyContinue
+            Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath 'AtlassianPSVII.Standards/Private/*.ps1') -ErrorAction SilentlyContinue
         ).BaseName
         $moduleCommands = @(
-            Get-Command -Module AtlassianPS.Standards -CommandType Function | Select-Object -ExpandProperty Name
+            Get-Command -Module AtlassianPSVII.Standards -CommandType Function | Select-Object -ExpandProperty Name
         )
         $normalizedModuleCommands = @(
             foreach ($moduleCommand in $moduleCommands) {
@@ -72,7 +72,7 @@ Describe 'Project validation' {
     }
 
     It 'loads analyzer settings as a hashtable' {
-        $settingsPath = InModuleScope AtlassianPS.Standards { Get-ScriptAnalyzerSettingsPath }
+        $settingsPath = InModuleScope AtlassianPSVII.Standards { Get-ScriptAnalyzerSettingsPath }
         $settings = Import-PowerShellDataFile -Path $settingsPath
 
         $settings | Should -BeOfType [hashtable]

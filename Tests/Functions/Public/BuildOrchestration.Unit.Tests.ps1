@@ -10,7 +10,7 @@ Describe 'Invoke-ModuleTests' {
         $testsPath = Join-Path -Path $TestDrive -ChildPath 'tests'
         $null = New-Item -Path $testsPath -ItemType Directory -Force
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             TestPath = $testsPath
         } {
             param($TestPath)
@@ -45,7 +45,7 @@ Describe 'Invoke-ModuleTests' {
         $testsPath = Join-Path -Path $TestDrive -ChildPath 'tests-failure'
         $null = New-Item -Path $testsPath -ItemType Directory -Force
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             TestPath = $testsPath
         } {
             param($TestPath)
@@ -67,7 +67,7 @@ Describe 'Invoke-ModuleTests' {
         $testsPath = Join-Path -Path $TestDrive -ChildPath 'tests-default-output'
         $null = New-Item -Path $testsPath -ItemType Directory -Force
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             TestPath = $testsPath
         } {
             param($TestPath)
@@ -108,7 +108,7 @@ Describe 'Set-ModuleManifestVersion' {
     RootModule           = 'Sample.psm1'
     ModuleVersion        = '0.1'
     GUID                 = 'b558bd8c-dc02-4ff2-96b7-4d2c61d9d103'
-    Author               = 'AtlassianPS'
+    Author               = 'AtlassianPSVII'
     Description          = 'Sample module.'
     PrivateData          = @{
         PSData = @{
@@ -124,7 +124,7 @@ Describe 'Set-ModuleManifestVersion' {
         $manifestPath = Join-Path -Path $TestDrive -ChildPath 'module-inplace.psd1'
         Set-Content -LiteralPath $manifestPath -Value $script:manifestTemplate
 
-        $version = Set-AtlassianPSModuleManifestVersion `
+        $version = Set-AtlassianPSVIIModuleManifestVersion `
             -BuiltManifestPath $manifestPath `
             -ModuleName 'Sample' `
             -VersionToPublish 'v1.2.3-rc-2'
@@ -154,7 +154,7 @@ Describe 'Set-ModuleManifestVersion' {
         $manifestPath = Join-Path -Path $TestDrive -ChildPath 'module-stable.psd1'
         Set-Content -LiteralPath $manifestPath -Value ($script:manifestTemplate -replace "Prerelease   = ''", "Prerelease   = 'beta'")
 
-        $null = Set-AtlassianPSModuleManifestVersion -BuiltManifestPath $manifestPath -ModuleName 'Sample' -VersionToPublish '1.2.4'
+        $null = Set-AtlassianPSVIIModuleManifestVersion -BuiltManifestPath $manifestPath -ModuleName 'Sample' -VersionToPublish '1.2.4'
 
         $data = Import-PowerShellDataFile -LiteralPath $manifestPath
         $data.ModuleVersion | Should -Be '1.2.4'
@@ -165,7 +165,7 @@ Describe 'Set-ModuleManifestVersion' {
         $manifestPath = Join-Path -Path $TestDrive -ChildPath 'module-notes-empty.psd1'
         Set-Content -LiteralPath $manifestPath -Value $script:manifestTemplate
 
-        $null = Set-AtlassianPSModuleManifestVersion -BuiltManifestPath $manifestPath -ModuleName 'Sample' -VersionToPublish '1.2.3'
+        $null = Set-AtlassianPSVIIModuleManifestVersion -BuiltManifestPath $manifestPath -ModuleName 'Sample' -VersionToPublish '1.2.3'
 
         (Import-PowerShellDataFile -LiteralPath $manifestPath).PrivateData.PSData.ReleaseNotes | Should -BeNullOrEmpty
     }
@@ -175,7 +175,7 @@ Describe 'Set-ModuleManifestVersion' {
         Set-Content -LiteralPath $manifestPath -Value $script:manifestTemplate
 
         $notes = "- Fixed don't break on apostrophes`n- Handle `$dollar and 'quoted' words`n- Multi-line notes"
-        $null = Set-AtlassianPSModuleManifestVersion `
+        $null = Set-AtlassianPSVIIModuleManifestVersion `
             -BuiltManifestPath $manifestPath `
             -ModuleName 'Sample' `
             -VersionToPublish '1.2.3' `
@@ -193,7 +193,7 @@ Describe 'Set-ModuleManifestVersion' {
         Set-Content -LiteralPath $manifestPath -Value $commentedManifest
 
         $notes = "- Fixed don't break on apostrophes`n- Preserve `$variables"
-        $null = Set-AtlassianPSModuleManifestVersion `
+        $null = Set-AtlassianPSVIIModuleManifestVersion `
             -BuiltManifestPath $manifestPath `
             -ModuleName 'Sample' `
             -VersionToPublish '1.2.3-rc-2' `
@@ -218,7 +218,7 @@ Describe 'Set-ModuleManifestVersion' {
         $manifestPath = Join-Path -Path $TestDrive -ChildPath 'module-noenforce.psd1'
         Set-Content -LiteralPath $manifestPath -Value $script:manifestTemplate
 
-        InModuleScope AtlassianPS.Standards -Parameters @{ BuiltManifestPath = $manifestPath } {
+        InModuleScope AtlassianPSVII.Standards -Parameters @{ BuiltManifestPath = $manifestPath } {
             param($BuiltManifestPath)
 
             Mock -CommandName Find-Module -MockWith { [PSCustomObject]@{ Version = [Version]'9.9.9' } }
@@ -233,7 +233,7 @@ Describe 'Set-ModuleManifestVersion' {
         $manifestPath = Join-Path -Path $TestDrive -ChildPath 'module-enforce.psd1'
         Set-Content -LiteralPath $manifestPath -Value $script:manifestTemplate
 
-        InModuleScope AtlassianPS.Standards -Parameters @{ BuiltManifestPath = $manifestPath } {
+        InModuleScope AtlassianPSVII.Standards -Parameters @{ BuiltManifestPath = $manifestPath } {
             param($BuiltManifestPath)
 
             Mock -CommandName Find-Module -MockWith { [PSCustomObject]@{ Version = [Version]'1.2.3' } }
@@ -252,7 +252,7 @@ Describe 'Set-ModuleManifestVersion' {
             [System.Text.UTF8Encoding]::new($false)
         )
 
-        $null = Set-AtlassianPSModuleManifestVersion -BuiltManifestPath $manifestPath -ModuleName 'Sample' -VersionToPublish '1.2.5'
+        $null = Set-AtlassianPSVIIModuleManifestVersion -BuiltManifestPath $manifestPath -ModuleName 'Sample' -VersionToPublish '1.2.5'
 
         $bytes = [System.IO.File]::ReadAllBytes($manifestPath)
         @($bytes[0], $bytes[1], $bytes[2]) | Should -Be @(239, 187, 191)
@@ -267,7 +267,7 @@ Describe 'Set-ModuleManifestVersion' {
         Set-Content -LiteralPath $manifestPath -Value $script:manifestTemplate
 
         {
-            Set-AtlassianPSModuleManifestVersion `
+            Set-AtlassianPSVIIModuleManifestVersion `
                 -BuiltManifestPath $manifestPath `
                 -ModuleName 'Sample' `
                 -VersionToPublish '1.2.6' `
@@ -277,7 +277,7 @@ Describe 'Set-ModuleManifestVersion' {
 
     It 'throws when the manifest does not exist' {
         {
-            Set-AtlassianPSModuleManifestVersion `
+            Set-AtlassianPSVIIModuleManifestVersion `
                 -BuiltManifestPath (Join-Path -Path $TestDrive -ChildPath 'missing.psd1') `
                 -ModuleName 'Sample' `
                 -VersionToPublish '1.2.3'
@@ -287,18 +287,18 @@ Describe 'Set-ModuleManifestVersion' {
 
 Describe 'Update-ModuleManifestExports' {
     It 'updates functions and aliases in the built manifest' {
-        $sourceModulePath = Join-Path -Path $TestDrive -ChildPath 'AtlassianPS.Standards'
+        $sourceModulePath = Join-Path -Path $TestDrive -ChildPath 'AtlassianPSVII.Standards'
         $publicPath = Join-Path -Path $sourceModulePath -ChildPath 'Public'
         $builtManifestPath = Join-Path -Path $TestDrive -ChildPath 'built.psd1'
-        $sourceManifestPath = Join-Path -Path $sourceModulePath -ChildPath 'AtlassianPS.Standards.psd1'
+        $sourceManifestPath = Join-Path -Path $sourceModulePath -ChildPath 'AtlassianPSVII.Standards.psd1'
 
         $null = New-Item -Path $publicPath -ItemType Directory -Force
         Set-Content -LiteralPath (Join-Path -Path $publicPath -ChildPath 'Get-Thing.ps1') -Value 'function Get-Thing { }'
         Set-Content -LiteralPath (Join-Path -Path $publicPath -ChildPath 'Set-Thing.ps1') -Value 'function Set-Thing { }'
-        Set-Content -LiteralPath $sourceManifestPath -Value "@{ RootModule = 'AtlassianPS.Standards.psm1' }"
+        Set-Content -LiteralPath $sourceManifestPath -Value "@{ RootModule = 'AtlassianPSVII.Standards.psm1' }"
         Set-Content -LiteralPath $builtManifestPath -Value "@{ ModuleVersion = '0.1.0' }"
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             SourceModulePath  = $sourceModulePath
             BuiltManifestPath = $builtManifestPath
         } {
@@ -316,7 +316,7 @@ Describe 'Update-ModuleManifestExports' {
             $result = Update-ModuleManifestExports `
                 -SourceModulePath $SourceModulePath `
                 -BuiltManifestPath $BuiltManifestPath `
-                -ModuleName 'AtlassianPS.Standards'
+                -ModuleName 'AtlassianPSVII.Standards'
 
             $result.FunctionsToExport | Should -Contain 'Get-Thing'
             $result.FunctionsToExport | Should -Contain 'Set-Thing'
@@ -328,19 +328,19 @@ Describe 'Update-ModuleManifestExports' {
     }
 
     It 'throws when source module manifest is missing' {
-        $sourceModulePath = Join-Path -Path $TestDrive -ChildPath 'AtlassianPS.Standards-no-source-manifest'
+        $sourceModulePath = Join-Path -Path $TestDrive -ChildPath 'AtlassianPSVII.Standards-no-source-manifest'
         $builtManifestPath = Join-Path -Path $TestDrive -ChildPath 'built-source-missing.psd1'
         $null = New-Item -Path (Join-Path -Path $sourceModulePath -ChildPath 'Public') -ItemType Directory -Force
         Set-Content -LiteralPath $builtManifestPath -Value "@{ ModuleVersion = '0.1.0' }"
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             SourceModulePath  = $sourceModulePath
             BuiltManifestPath = $builtManifestPath
         } {
             param($SourceModulePath, $BuiltManifestPath)
 
             {
-                Update-ModuleManifestExports -SourceModulePath $SourceModulePath -BuiltManifestPath $BuiltManifestPath -ModuleName 'AtlassianPS.Standards'
+                Update-ModuleManifestExports -SourceModulePath $SourceModulePath -BuiltManifestPath $BuiltManifestPath -ModuleName 'AtlassianPSVII.Standards'
             } | Should -Throw -ExpectedMessage "Source module manifest*was not found."
         }
     }

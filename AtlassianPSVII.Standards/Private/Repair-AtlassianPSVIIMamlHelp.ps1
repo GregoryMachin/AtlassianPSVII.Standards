@@ -1,4 +1,4 @@
-﻿function Repair-AtlassianPSMamlHelp {
+﻿function Repair-AtlassianPSVIIMamlHelp {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

@@ -28,13 +28,13 @@ param(
 $ErrorActionPreference = 'Stop'
 
 $projectRoot = (Resolve-Path -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath
-$moduleSourcePath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards/AtlassianPS.Standards.psm1'
+$moduleSourcePath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPSVII.Standards/AtlassianPSVII.Standards.psm1'
 
 try {
     Import-Module -Name $moduleSourcePath -Force -ErrorAction Stop
 }
 catch {
-    throw "Failed to import AtlassianPS.Standards module source from '$moduleSourcePath'. Original error: $($_.Exception.Message)"
+    throw "Failed to import AtlassianPSVII.Standards module source from '$moduleSourcePath'. Original error: $($_.Exception.Message)"
 }
 
 $atomicPinMode = $TargetRepositoryRoot -or $StandardsVersion -or $SetupActionCommitSha -or $WorkflowPath
@@ -60,12 +60,12 @@ if ($atomicPinMode) {
         $atomicParameters.WorkflowPath = $WorkflowPath
     }
 
-    $result = AtlassianPS.Standards\Update-StandardsDependencyPin @atomicParameters
+    $result = AtlassianPSVII.Standards\Update-StandardsDependencyPin @atomicParameters
 }
 else {
-    $result = AtlassianPS.Standards\Update-DependencyReference `
+    $result = AtlassianPSVII.Standards\Update-DependencyReference `
         -BuildRequirementsPath (Join-Path -Path $projectRoot -ChildPath 'Tools/build.requirements.psd1') `
-        -ManifestPath (Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards/AtlassianPS.Standards.psd1') `
+        -ManifestPath (Join-Path -Path $projectRoot -ChildPath 'AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1') `
         -SkipBuildRequirement:$SkipBuildRequirement `
         -SkipManifestRequirement:$SkipManifestRequirement `
         -ErrorAction Stop

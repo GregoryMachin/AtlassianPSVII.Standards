@@ -7,12 +7,12 @@ BeforeAll {
 
 Describe 'Update-DependencyReference' {
     It 'is exported by the module' {
-        $command = Get-Command -Name 'Update-AtlassianPSDependencyReference' -ErrorAction SilentlyContinue
+        $command = Get-Command -Name 'Update-AtlassianPSVIIDependencyReference' -ErrorAction SilentlyContinue
         $command | Should -Not -BeNullOrEmpty
     }
 
     It 'provides comment-based help' {
-        $help = Get-Help -Name 'Update-AtlassianPSDependencyReference' -ErrorAction Stop
+        $help = Get-Help -Name 'Update-AtlassianPSVIIDependencyReference' -ErrorAction Stop
         $help.Synopsis | Should -Not -BeNullOrEmpty
         $help.Description.Text | Should -Not -BeNullOrEmpty
     }
@@ -34,7 +34,7 @@ Describe 'Update-DependencyReference' {
     )
 }
 '@
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
             ManifestPath          = $manifestPath
         } {
@@ -78,7 +78,7 @@ Describe 'Update-DependencyReference' {
 }
 '@
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
         } {
             param($BuildRequirementsPath)
@@ -111,7 +111,7 @@ Describe 'Update-DependencyReference' {
 }
 '@
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
             ManifestPath          = $manifestPath
         } {
@@ -147,7 +147,7 @@ Describe 'Update-DependencyReference' {
     )
 }
 '@
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
             ManifestPath          = $manifestPath
         } {
@@ -179,7 +179,7 @@ Describe 'Update-DependencyReference' {
 )
 '@
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
         } {
             param($BuildRequirementsPath)
@@ -205,7 +205,7 @@ Describe 'Update-DependencyReference' {
 )
 '@
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
         } {
             param($BuildRequirementsPath)
@@ -225,7 +225,7 @@ Describe 'Update-DependencyReference' {
     }
 
     It 'uses default repository paths when explicit paths are omitted' {
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             Mock -CommandName Find-Module -MockWith {
                 [PSCustomObject]@{ Version = [Version]'0.0.0' }
             }

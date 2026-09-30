@@ -16,15 +16,15 @@ BeforeAll {
         )
 
         $null = New-Item -Path $Path -ItemType Directory -Force
-        $modulePath = Join-Path -Path $Path -ChildPath 'AtlassianPS.Standards.psm1'
-        $manifestPath = Join-Path -Path $Path -ChildPath 'AtlassianPS.Standards.psd1'
+        $modulePath = Join-Path -Path $Path -ChildPath 'AtlassianPSVII.Standards.psm1'
+        $manifestPath = Join-Path -Path $Path -ChildPath 'AtlassianPSVII.Standards.psd1'
         Set-Content -LiteralPath $modulePath -Value 'function Get-CandidateMarker { ''candidate'' }'
         New-ModuleManifest `
             -Path $manifestPath `
-            -RootModule 'AtlassianPS.Standards.psm1' `
+            -RootModule 'AtlassianPSVII.Standards.psm1' `
             -ModuleVersion '9.9.9' `
             -Guid 'c569c2c6-ed21-4d00-9b4e-14bd466cad81' `
-            -Author 'AtlassianPS' `
+            -Author 'AtlassianPSVII' `
             -Description 'Candidate fixture.'
 
         return $Path
@@ -41,7 +41,7 @@ BeforeAll {
             [String]$WorkspaceRoot,
 
             [Parameter(Mandatory)]
-            [ValidateSet('AtlassianPS.Configuration', 'JiraPS', 'JiraAgilePS', 'ConfluencePS')]
+            [ValidateSet('AtlassianPSVII.Configuration', 'JiraPSVII', 'JiraAgilePSVII', 'ConfluencePSVII')]
             [String]$Name,
 
             [Parameter()]
@@ -71,7 +71,7 @@ BeforeAll {
             -Value "task . { 'validated' }"
         Set-Content `
             -LiteralPath (Join-Path -Path $toolsPath -ChildPath 'build.requirements.psd1') `
-            -Value "@(@{ ModuleName = 'AtlassianPS.Standards'; RequiredVersion = '$RequiredVersion' })"
+            -Value "@(@{ ModuleName = 'AtlassianPSVII.Standards'; RequiredVersion = '$RequiredVersion' })"
 
         return $repositoryPath
     }
@@ -95,13 +95,13 @@ Describe 'Downstream compatibility candidate resolution' -Tag Unit {
 
         $candidate.ModuleRoot | Should -Be (Resolve-Path $candidatePath).ProviderPath
         $candidate.ModuleVersion | Should -Be ([Version]'9.9.9')
-        $candidate.ManifestPath | Should -Be (Join-Path $candidate.ModuleRoot 'AtlassianPS.Standards.psd1')
+        $candidate.ManifestPath | Should -Be (Join-Path $candidate.ModuleRoot 'AtlassianPSVII.Standards.psd1')
     }
 
     It 'resolves an artifact root containing the module directory' {
         $artifactRoot = Join-Path $TestDrive 'artifact'
         $candidatePath = New-TestStandardsCandidate -Path (
-            Join-Path $artifactRoot 'AtlassianPS.Standards'
+            Join-Path $artifactRoot 'AtlassianPSVII.Standards'
         )
 
         $candidate = Resolve-StandardsCandidateModule -Path $artifactRoot
@@ -121,17 +121,17 @@ Describe 'Downstream repository discovery' -Tag Unit {
         $workspaceRoot = Join-Path $TestDrive 'workspace with spaces'
         $repositoryPath = New-TestDownstreamRepository `
             -WorkspaceRoot $workspaceRoot `
-            -Name 'JiraPS'
+            -Name 'JiraPSVII'
         Set-Content -LiteralPath (Join-Path $repositoryPath 'untrusted.ps1') -Value "throw 'must not run'"
 
         $repository = Get-AllowedDownstreamRepository `
             -WorkspaceRoot $workspaceRoot `
-            -Name 'JiraPS'
+            -Name 'JiraPSVII'
 
         $repository.Exists | Should -BeTrue
         $repository.RepositoryPath | Should -Be (Resolve-Path $repositoryPath).ProviderPath
         $repository.BuildScriptPath | Should -Be (
-            Join-Path $repository.RepositoryPath 'JiraPS.build.ps1'
+            Join-Path $repository.RepositoryPath 'JiraPSVII.build.ps1'
         )
         $repository.BuildScriptPath | Should -Not -Match 'untrusted'
     }
@@ -142,10 +142,10 @@ Describe 'Downstream repository discovery' -Tag Unit {
 
         $repository = Get-AllowedDownstreamRepository `
             -WorkspaceRoot $workspaceRoot `
-            -Name 'ConfluencePS'
+            -Name 'ConfluencePSVII'
 
         $repository.Exists | Should -BeFalse
-        $repository.BuildScriptPath | Should -Match 'ConfluencePS\.build\.ps1$'
+        $repository.BuildScriptPath | Should -Match 'ConfluencePSVII\.build\.ps1$'
     }
 
     It 'rejects repository names outside the allow-list' {
@@ -168,16 +168,16 @@ Describe 'Downstream compatibility orchestration' -Tag Unit {
         )
 
         foreach ($name in @(
-                'AtlassianPS.Configuration',
-                'JiraPS',
-                'JiraAgilePS',
-                'ConfluencePS'
+                'AtlassianPSVII.Configuration',
+                'JiraPSVII',
+                'JiraAgilePSVII',
+                'ConfluencePSVII'
             )) {
             $null = New-TestDownstreamRepository -WorkspaceRoot $workspaceRoot -Name $name
         }
 
         Mock Invoke-DownstreamValidationProcess {
-            if ((Split-Path -Path $RepositoryPath -Leaf) -eq 'JiraPS') {
+            if ((Split-Path -Path $RepositoryPath -Leaf) -eq 'JiraPSVII') {
                 return [PSCustomObject]@{
                     Status         = 'Failed'
                     ExitCode       = 7
@@ -194,7 +194,7 @@ Describe 'Downstream compatibility orchestration' -Tag Unit {
                 -CandidateModulePath $candidatePath `
                 -WorkspaceRoot $workspaceRoot `
                 -PowerShellPath (Get-Process -Id $PID).Path
-        } | Should -Throw -ExpectedMessage '*JiraPS (Failed, exit 7)*'
+        } | Should -Throw -ExpectedMessage '*JiraPSVII (Failed, exit 7)*'
 
         Should -Invoke Invoke-DownstreamValidationProcess -Exactly -Times 4
     }
@@ -206,16 +206,16 @@ Describe 'Downstream compatibility orchestration' -Tag Unit {
         $workspaceRoot = Join-Path $TestDrive (
             'downstream workspace with spaces {0}' -f [Guid]::NewGuid().ToString('N')
         )
-        $null = New-TestDownstreamRepository -WorkspaceRoot $workspaceRoot -Name 'JiraPS'
+        $null = New-TestDownstreamRepository -WorkspaceRoot $workspaceRoot -Name 'JiraPSVII'
         Mock Invoke-DownstreamValidationProcess { Get-PassedProcessResult }
 
         {
             Invoke-DownstreamCompatibility `
                 -CandidateModulePath $candidatePath `
                 -WorkspaceRoot $workspaceRoot `
-                -RepositoryName @('JiraPS', 'ConfluencePS') `
+                -RepositoryName @('JiraPSVII', 'ConfluencePSVII') `
                 -PowerShellPath (Get-Process -Id $PID).Path
-        } | Should -Throw -ExpectedMessage '*ConfluencePS (Missing*'
+        } | Should -Throw -ExpectedMessage '*ConfluencePSVII (Missing*'
 
         Should -Invoke Invoke-DownstreamValidationProcess -Exactly -Times 1
     }
@@ -227,14 +227,14 @@ Describe 'Downstream compatibility orchestration' -Tag Unit {
         $workspaceRoot = Join-Path $TestDrive (
             'downstream workspace with spaces {0}' -f [Guid]::NewGuid().ToString('N')
         )
-        $null = New-TestDownstreamRepository -WorkspaceRoot $workspaceRoot -Name 'JiraPS'
+        $null = New-TestDownstreamRepository -WorkspaceRoot $workspaceRoot -Name 'JiraPSVII'
         Mock Invoke-DownstreamValidationProcess { Get-PassedProcessResult }
 
         $results = @(
             Invoke-DownstreamCompatibility `
                 -CandidateModulePath $candidatePath `
                 -WorkspaceRoot $workspaceRoot `
-                -RepositoryName @('JiraPS', 'ConfluencePS') `
+                -RepositoryName @('JiraPSVII', 'ConfluencePSVII') `
                 -PowerShellPath (Get-Process -Id $PID).Path `
                 -SkipMissingRepository
         )
@@ -251,21 +251,21 @@ Describe 'Downstream compatibility orchestration' -Tag Unit {
         )
         $repositoryPath = New-TestDownstreamRepository `
             -WorkspaceRoot $workspaceRoot `
-            -Name 'JiraAgilePS' `
+            -Name 'JiraAgilePSVII' `
             -RequiredVersion '0.1.2'
         Mock Invoke-DownstreamValidationProcess { Get-PassedProcessResult }
 
         $result = Invoke-DownstreamCompatibility `
             -CandidateModulePath $candidatePath `
             -WorkspaceRoot $workspaceRoot `
-            -RepositoryName 'JiraAgilePS' `
+            -RepositoryName 'JiraAgilePSVII' `
             -PowerShellPath (Get-Process -Id $PID).Path
 
         $result.Status | Should -Be 'Passed'
         $result.RequiredVersion | Should -Be ([Version]'0.1.2')
         Should -Invoke Invoke-DownstreamValidationProcess -Exactly -Times 1 -ParameterFilter {
             $RepositoryPath -eq (Resolve-Path $repositoryPath).ProviderPath -and
-            $BuildScriptPath -eq (Join-Path (Resolve-Path $repositoryPath).ProviderPath 'JiraAgilePS.build.ps1')
+            $BuildScriptPath -eq (Join-Path (Resolve-Path $repositoryPath).ProviderPath 'JiraAgilePSVII.build.ps1')
         }
     }
 }

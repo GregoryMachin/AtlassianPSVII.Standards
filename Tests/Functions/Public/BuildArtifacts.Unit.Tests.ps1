@@ -8,7 +8,7 @@ BeforeAll {
 Describe 'Copy-ModuleArtifacts' {
     It 'copies module files, additional files, and tests' {
         $projectRoot = Join-Path -Path $TestDrive -ChildPath 'project'
-        $moduleName = 'AtlassianPS.Standards'
+        $moduleName = 'AtlassianPSVII.Standards'
         $modulePath = Join-Path -Path $projectRoot -ChildPath $moduleName
         $publicPath = Join-Path -Path $modulePath -ChildPath 'Public'
         $testsPath = Join-Path -Path $projectRoot -ChildPath 'Tests'
@@ -20,7 +20,7 @@ Describe 'Copy-ModuleArtifacts' {
         Set-Content -LiteralPath (Join-Path -Path $projectRoot -ChildPath 'README.md') -Value '# readme'
         Set-Content -LiteralPath (Join-Path -Path $testsPath -ChildPath 'Example.Tests.ps1') -Value 'Describe "x" { }'
 
-        $result = Copy-AtlassianPSModuleArtifacts `
+        $result = Copy-AtlassianPSVIIModuleArtifacts `
             -ProjectPath $projectRoot `
             -ModuleName $moduleName `
             -BuildOutputPath $buildOutput `
@@ -34,14 +34,14 @@ Describe 'Copy-ModuleArtifacts' {
 
     It 'throws when an additional artifact file is missing' {
         $projectRoot = Join-Path -Path $TestDrive -ChildPath 'project-missing-artifact'
-        $moduleName = 'AtlassianPS.Standards'
+        $moduleName = 'AtlassianPSVII.Standards'
         $modulePath = Join-Path -Path $projectRoot -ChildPath $moduleName
         $buildOutput = Join-Path -Path $projectRoot -ChildPath 'Release'
 
         $null = New-Item -Path $modulePath -ItemType Directory -Force
 
         {
-            Copy-AtlassianPSModuleArtifacts `
+            Copy-AtlassianPSVIIModuleArtifacts `
                 -ProjectPath $projectRoot `
                 -ModuleName $moduleName `
                 -BuildOutputPath $buildOutput `
@@ -52,13 +52,13 @@ Describe 'Copy-ModuleArtifacts' {
 
 Describe 'Join-ModuleSource' {
     It 'merges function files into psm1 and removes source folders' {
-        $releaseModulePath = Join-Path -Path $TestDrive -ChildPath 'Release/AtlassianPS.Standards'
+        $releaseModulePath = Join-Path -Path $TestDrive -ChildPath 'Release/AtlassianPSVII.Standards'
         $publicPath = Join-Path -Path $releaseModulePath -ChildPath 'Public'
         $privatePath = Join-Path -Path $releaseModulePath -ChildPath 'Private'
         $null = New-Item -Path $publicPath -ItemType Directory -Force
         $null = New-Item -Path $privatePath -ItemType Directory -Force
 
-        $psm1Path = Join-Path -Path $releaseModulePath -ChildPath 'AtlassianPS.Standards.psm1'
+        $psm1Path = Join-Path -Path $releaseModulePath -ChildPath 'AtlassianPSVII.Standards.psm1'
         Set-Content -LiteralPath $psm1Path -Value @'
 #region Dependencies
 $null = $true
@@ -67,7 +67,7 @@ $null = $true
         Set-Content -LiteralPath (Join-Path -Path $publicPath -ChildPath 'Get-Example.ps1') -Value 'function Get-Example { "public" }'
         Set-Content -LiteralPath (Join-Path -Path $privatePath -ChildPath 'Invoke-Example.ps1') -Value 'function Invoke-Example { "private" }'
 
-        $targetFile = Join-AtlassianPSModuleSource -ReleaseModulePath $releaseModulePath
+        $targetFile = Join-AtlassianPSVIIModuleSource -ReleaseModulePath $releaseModulePath
 
         $targetFile | Should -Be $psm1Path
         (Get-Content -LiteralPath $targetFile -Raw) | Should -Match 'function Get-Example'
@@ -93,7 +93,7 @@ $null = $true
         Set-Content -LiteralPath (Join-Path -Path $publicPath -ChildPath 'Zeta.ps1') -Value 'function Get-Zeta { "z" }'
         Set-Content -LiteralPath (Join-Path -Path $privatePath -ChildPath 'Alpha.ps1') -Value 'function Invoke-Alpha { "a" }'
 
-        $null = Join-AtlassianPSModuleSource -ReleaseModulePath $releaseModulePath -RemoveSourceFolders $false
+        $null = Join-AtlassianPSVIIModuleSource -ReleaseModulePath $releaseModulePath -RemoveSourceFolders $false
 
         $compiled = Get-Content -LiteralPath $psm1Path -Raw
         $compiled.IndexOf('function Invoke-Alpha') | Should -BeLessThan $compiled.IndexOf('function Get-Zeta')
@@ -104,7 +104,7 @@ $null = $true
         $null = New-Item -Path $releaseModulePath -ItemType Directory -Force
 
         {
-            Join-AtlassianPSModuleSource -ReleaseModulePath $releaseModulePath
+            Join-AtlassianPSVIIModuleSource -ReleaseModulePath $releaseModulePath
         } | Should -Throw -ExpectedMessage "Module source file*was not found."
     }
 
@@ -119,7 +119,7 @@ $null = $true
 '@
 
         {
-            Join-AtlassianPSModuleSource -ReleaseModulePath $releaseModulePath -SourceFolders @('..')
+            Join-AtlassianPSVIIModuleSource -ReleaseModulePath $releaseModulePath -SourceFolders @('..')
         } | Should -Throw -ExpectedMessage "Source folder*resolves outside release module path*"
     }
 
@@ -139,7 +139,7 @@ $null = $true
         Set-Content -LiteralPath (Join-Path -Path $publicPath -ChildPath 'Get-Example.ps1') -Value 'function Get-Example { "public" }'
         Set-Content -LiteralPath (Join-Path -Path $privatePath -ChildPath 'Invoke-Example.ps1') -Value 'function Invoke-Example { "private" }'
 
-        $null = Join-AtlassianPSModuleSource -ReleaseModulePath $releaseModulePath -RemoveSourceFolders $false
+        $null = Join-AtlassianPSVIIModuleSource -ReleaseModulePath $releaseModulePath -RemoveSourceFolders $false
 
         (Test-Path -LiteralPath $publicPath -PathType Container) | Should -BeTrue
         (Test-Path -LiteralPath $privatePath -PathType Container) | Should -BeTrue
@@ -149,14 +149,14 @@ $null = $true
 Describe 'New-ModulePackage' {
     It 'creates a zip package for the release module directory' {
         $buildOutput = Join-Path -Path $TestDrive -ChildPath 'Release'
-        $modulePath = Join-Path -Path $buildOutput -ChildPath 'AtlassianPS.Standards'
+        $modulePath = Join-Path -Path $buildOutput -ChildPath 'AtlassianPSVII.Standards'
         $null = New-Item -Path $modulePath -ItemType Directory -Force
         Set-Content -LiteralPath (Join-Path -Path $modulePath -ChildPath 'README.md') -Value 'content'
 
-        $zipPath = New-AtlassianPSModulePackage -BuildOutputPath $buildOutput -ModuleName 'AtlassianPS.Standards'
+        $zipPath = New-AtlassianPSVIIModulePackage -BuildOutputPath $buildOutput -ModuleName 'AtlassianPSVII.Standards'
 
         (Test-Path -LiteralPath $zipPath -PathType Leaf) | Should -BeTrue
-        $zipPath | Should -Match 'AtlassianPS\.Standards\.zip$'
+        $zipPath | Should -Match 'AtlassianPSVII\.Standards\.zip$'
     }
 
     It 'creates byte-identical archives regardless of source timestamps' {
@@ -168,14 +168,14 @@ Describe 'New-ModulePackage' {
         Set-Content -LiteralPath $firstFile -Value 'alpha'
         Set-Content -LiteralPath $secondFile -Value 'zeta'
 
-        $firstPackage = New-AtlassianPSModulePackage `
+        $firstPackage = New-AtlassianPSVIIModulePackage `
             -BuildOutputPath $buildOutput `
             -ModuleName 'Deterministic' `
             -DestinationPath (Join-Path -Path $buildOutput -ChildPath 'first.zip')
 
         (Get-Item -LiteralPath $firstFile).LastWriteTimeUtc = [DateTime]'2030-01-01T00:00:00Z'
         (Get-Item -LiteralPath $secondFile).LastWriteTimeUtc = [DateTime]'2040-01-01T00:00:00Z'
-        $secondPackage = New-AtlassianPSModulePackage `
+        $secondPackage = New-AtlassianPSVIIModulePackage `
             -BuildOutputPath $buildOutput `
             -ModuleName 'Deterministic' `
             -DestinationPath (Join-Path -Path $buildOutput -ChildPath 'second.zip')
@@ -188,7 +188,7 @@ Describe 'New-ModulePackage' {
         $buildOutput = Join-Path -Path $TestDrive -ChildPath 'Release-missing'
 
         {
-            New-AtlassianPSModulePackage -BuildOutputPath $buildOutput -ModuleName 'AtlassianPS.Standards'
+            New-AtlassianPSVIIModulePackage -BuildOutputPath $buildOutput -ModuleName 'AtlassianPSVII.Standards'
         } | Should -Throw -ExpectedMessage "Missing files to package*"
     }
 }

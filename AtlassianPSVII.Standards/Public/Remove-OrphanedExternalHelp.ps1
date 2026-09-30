@@ -19,9 +19,9 @@
         None. Removes generated help files and directories when their markdown sources no longer exist.
 
     .EXAMPLE
-        Remove-AtlassianPSOrphanedExternalHelp -ModulePath './JiraPS' -DocsPath './docs' -ModuleName 'JiraPS'
+        Remove-AtlassianPSVIIOrphanedExternalHelp -ModulePath './JiraPSVII' -DocsPath './docs' -ModuleName 'JiraPSVII'
 
-        Removes stale generated help artifacts from locale folders in the JiraPS module directory.
+        Removes stale generated help artifacts from locale folders in the JiraPSVII module directory.
     #>
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSUseShouldProcessForStateChangingFunctions', '', Justification = 'Build helper removes generated help artifacts only from generated locale output folders.')]
     [CmdletBinding(SupportsShouldProcess)]

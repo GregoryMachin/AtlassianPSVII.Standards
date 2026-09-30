@@ -25,11 +25,11 @@
 
     .EXAMPLE
         BeforeAll {
-            Import-Module AtlassianPS.Standards
-            $script:moduleToTest = Initialize-AtlassianPSModuleTestEnvironment -ModuleName 'JiraPS' -StartPath $PSScriptRoot
+            Import-Module AtlassianPSVII.Standards
+            $script:moduleToTest = Initialize-AtlassianPSVIIModuleTestEnvironment -ModuleName 'JiraPSVII' -StartPath $PSScriptRoot
         }
 
-        Imports JiraPS for a Pester file and returns the manifest path used for the import.
+        Imports JiraPSVII for a Pester file and returns the manifest path used for the import.
     #>
     [CmdletBinding()]
     [OutputType([String])]

@@ -7,7 +7,7 @@ BeforeAll {
 
 Describe 'API quality primitives' {
     It 'reports missing, duplicate, unexpected, and incomplete inventory rows' {
-        $result = Test-AtlassianPSApiOperationInventory `
+        $result = Test-AtlassianPSVIIApiOperationInventory `
             -CommandName @('Get-One', 'Get-Two') `
             -InventoryRow @(
             [PSCustomObject]@{ Command = 'Get-One'; Method = 'GET' }
@@ -25,7 +25,7 @@ Describe 'API quality primitives' {
     }
 
     It 'returns a conformant inventory result with a stable schema' {
-        $result = Test-AtlassianPSApiOperationInventory `
+        $result = Test-AtlassianPSVIIApiOperationInventory `
             -CommandName @('Get-Two', 'Get-One') `
             -InventoryRow @(
             @{ Command = 'Get-One'; Method = 'GET' }
@@ -48,7 +48,7 @@ Describe 'API quality primitives' {
     }
 
     It 'redacts standard and configured sensitive headers in every diagnostic' {
-        $result = Test-AtlassianPSApiResponseHeader `
+        $result = Test-AtlassianPSVIIApiResponseHeader `
             -Header @{
             Authorization           = 'Bearer actual-token'
             'Proxy-Authorization'   = 'Basic proxy-secret'
@@ -77,7 +77,7 @@ Describe 'API quality primitives' {
     }
 
     It 'reports malformed headers without returning their values' {
-        $result = Test-AtlassianPSApiResponseHeader -Header @{
+        $result = Test-AtlassianPSVIIApiResponseHeader -Header @{
             'Bad Header' = 'value'
             'X-Good'     = "value`r`ninjected"
         }
@@ -95,7 +95,7 @@ Describe 'API quality primitives' {
             }
         )
 
-        $result = Test-AtlassianPSApiResponseHeader `
+        $result = Test-AtlassianPSVIIApiResponseHeader `
             -Header $headers `
             -ExpectedHeader @{ 'X-Request-Id' = 'request-123' }
 
@@ -105,7 +105,7 @@ Describe 'API quality primitives' {
 
     It 'classifies past and future sunset dates at configured thresholds' {
         $now = [DateTimeOffset]'2026-07-28T00:00:00Z'
-        $result = Test-AtlassianPSApiSunset `
+        $result = Test-AtlassianPSVIIApiSunset `
             -Now $now `
             -FailureThresholdDays 30 `
             -WarningThresholdDays 90 `
@@ -127,7 +127,7 @@ Describe 'API quality primitives' {
 
     It 'throws when a sunset reaches the failure threshold' {
         {
-            Test-AtlassianPSApiSunset `
+            Test-AtlassianPSVIIApiSunset `
                 -Now ([DateTimeOffset]'2026-07-28T00:00:00Z') `
                 -FailureThresholdDays 30 `
                 -WarningThresholdDays 90 `
@@ -140,7 +140,7 @@ Describe 'API quality primitives' {
 
     It 'emits deterministic redacted canary JSON' {
         $parameters = @{
-            Repository     = 'JiraPS'
+            Repository     = 'JiraPSVII'
             Operation      = 'Search-Issue'
             DeploymentType = 'Cloud'
             Status         = 'Passed'
@@ -157,11 +157,11 @@ Describe 'API quality primitives' {
             AsJson         = $true
         }
 
-        $first = ConvertTo-AtlassianPSApiCanaryResult @parameters
-        $second = ConvertTo-AtlassianPSApiCanaryResult @parameters
+        $first = ConvertTo-AtlassianPSVIIApiCanaryResult @parameters
+        $second = ConvertTo-AtlassianPSVIIApiCanaryResult @parameters
 
         $first | Should -BeExactly $second
-        $first | Should -BeExactly '{"SchemaVersion":"1.0","Repository":"JiraPS","Operation":"Search-Issue","DeploymentType":"Cloud","Status":"Passed","StartedAtUtc":"2026-07-27T13:00:00.0000000+00:00","CompletedAtUtc":"2026-07-27T13:00:01.2500000+00:00","DurationMilliseconds":1250,"Message":"Authorization: [REDACTED]","Metadata":{"alpha":1,"apiToken":"[REDACTED]","Authorization":"[REDACTED]","nested":{"cookie":"[REDACTED]","result":"ok"},"zeta":2}}'
+        $first | Should -BeExactly '{"SchemaVersion":"1.0","Repository":"JiraPSVII","Operation":"Search-Issue","DeploymentType":"Cloud","Status":"Passed","StartedAtUtc":"2026-07-27T13:00:00.0000000+00:00","CompletedAtUtc":"2026-07-27T13:00:01.2500000+00:00","DurationMilliseconds":1250,"Message":"Authorization: [REDACTED]","Metadata":{"alpha":1,"apiToken":"[REDACTED]","Authorization":"[REDACTED]","nested":{"cookie":"[REDACTED]","result":"ok"},"zeta":2}}'
         $first | Should -Not -Match 'hidden|Bearer secret|token-value|session-secret'
     }
 }

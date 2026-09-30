@@ -13,7 +13,7 @@ inputs:
     required: false
     default: ./Release/release-notes.md
   module-path:
-    description: Optional path to AtlassianPS.Standards.psd1. Use this when running from the Standards repository itself.
+    description: Optional path to AtlassianPSVII.Standards.psd1. Use this when running from the Standards repository itself.
     required: false
 outputs:
   release_notes_path:
@@ -35,10 +35,10 @@ runs:
             Import-Module $env:MODULE_PATH -Force
         }
         else {
-            Import-Module AtlassianPS.Standards -Force
+            Import-Module AtlassianPSVII.Standards -Force
         }
 
-        $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
+        $releaseNotes = Get-AtlassianPSVIIReleaseNotesFromChangelog `
             -ChangelogPath $env:CHANGELOG_PATH `
             -ReleaseVersion $env:RELEASE_VERSION
 

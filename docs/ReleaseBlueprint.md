@@ -1,11 +1,11 @@
-# AtlassianPS Release Blueprint
+# AtlassianPSVII Release Blueprint
 
-This document is the canonical release blueprint for AtlassianPS PowerShell modules.
+This document is the canonical release blueprint for AtlassianPSVII PowerShell modules.
 Module repositories may keep short local runbooks, but cross-repository release strategy belongs here.
 
 ## Goals
 
-- Keep release workflows predictable across AtlassianPS modules.
+- Keep release workflows predictable across AtlassianPSVII modules.
 - Reuse shared Standards primitives instead of copying release logic into each repository.
 - Keep `CHANGELOG.md`, GitHub release bodies, and PSGallery manifest `PrivateData.PSData.ReleaseNotes` synchronized.
 - Fail release-note and tag validation before publishing immutable PSGallery packages.
@@ -55,18 +55,18 @@ After CI succeeds on a normal merged pull request with `release:patch`, `release
 `release:none` merges should stop after planning and must not publish.
 The workflow should be serialized with concurrency so multiple release-labelled merges do not race the next-version calculation.
 Use `GITHUB_TOKEN` by default when committing release metadata to `master`.
-Keep an optional release automation token, for example `ATLASSIANPS_RELEASE_BOT_TOKEN`, only for repositories where branch protection or repository rules block `GITHUB_TOKEN` pushes.
+Keep an optional release automation token, for example `ATLASSIANPSVII_RELEASE_BOT_TOKEN`, only for repositories where branch protection or repository rules block `GITHUB_TOKEN` pushes.
 
 When unreleased changes already exist on `master` without an associated merged release-labelled PR, use the manual `workflow_dispatch` input on `continuous_release.yml` and choose the release impact for the whole bucket.
 Manual dispatch must still check out `master`, not the arbitrary ref selected in the GitHub UI.
 The manual path does not generate a PR-title changelog fragment; it releases the existing `## Unreleased` body and any existing `.changelog/*.md` fragments.
 For prereleases, enter `alpha`, `beta`, `rc`, or a numbered form like `rc-2` in the manual `prerelease` input.
-The generated tag and changelog section use forms like `vX.Y.Z-alpha`, `vX.Y.Z-beta`, `vX.Y.Z-rc`, or `vX.Y.Z-rc-2`; `Set-AtlassianPSModuleManifestVersion` writes the manifest `PrivateData.PSData.Prerelease` label, and the GitHub release is marked as a prerelease.
+The generated tag and changelog section use forms like `vX.Y.Z-alpha`, `vX.Y.Z-beta`, `vX.Y.Z-rc`, or `vX.Y.Z-rc-2`; `Set-AtlassianPSVIIModuleManifestVersion` writes the manifest `PrivateData.PSData.Prerelease` label, and the GitHub release is marked as a prerelease.
 
 ## Release Recovery
 
 Do not keep a separate tag-triggered release workflow unless it is intentionally idempotent across already-created tags, PSGallery packages, GitHub releases, uploaded assets, and website notifications.
-The default AtlassianPS release path has one publishing workflow: `continuous_release.yml`.
+The default AtlassianPSVII release path has one publishing workflow: `continuous_release.yml`.
 If a release fails after publishing an immutable PSGallery package, repair the failed downstream artifact directly, for example by creating the missing GitHub release or rerunning the website dispatch, instead of rerunning a workflow that calls `Publish-Module` again.
 
 ## Required Shared Actions
@@ -118,7 +118,7 @@ Task SetSourceVersion {
         throw 'VersionToPublish is required for SetSourceVersion. Use -VersionToPublish <semver>.'
     }
 
-    $null = Set-AtlassianPSModuleManifestVersion `
+    $null = Set-AtlassianPSVIIModuleManifestVersion `
         -BuiltManifestPath $env:BHPSModuleManifest `
         -ModuleName $env:BHProjectName `
         -VersionToPublish $script:BuildInfo.VersionToPublish
@@ -128,11 +128,11 @@ Task SetArtifactReleaseNotes {
     $builtManifestPath = $script:BuildInfo.BuiltManifestPath
     $built = Import-PowerShellDataFile -LiteralPath $builtManifestPath
     $releaseVersion = "v$($built.ModuleVersion)"
-    $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
+    $releaseNotes = Get-AtlassianPSVIIReleaseNotesFromChangelog `
         -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
         -ReleaseVersion $releaseVersion
 
-    $null = Set-AtlassianPSModuleManifestVersion `
+    $null = Set-AtlassianPSVIIModuleManifestVersion `
         -BuiltManifestPath $builtManifestPath `
         -ModuleName $env:BHProjectName `
         -VersionToPublish $releaseVersion `
@@ -140,13 +140,13 @@ Task SetArtifactReleaseNotes {
 }
 
 Task Package {
-    $script:PackagePath = New-AtlassianPSModulePackage `
+    $script:PackagePath = New-AtlassianPSVIIModulePackage `
         -BuildOutputPath $env:BHBuildOutput `
         -ModuleName $env:BHProjectName
 }
 
 Task Provenance Package, {
-    $null = New-AtlassianPSReleaseProvenance `
+    $null = New-AtlassianPSVIIReleaseProvenance `
         -PackagePath $script:PackagePath `
         -ModuleManifestPath $script:BuildInfo.BuiltManifestPath `
         -BuildRequirementsPath "$env:BHProjectPath/Tools/build.requirements.psd1" `
@@ -168,8 +168,8 @@ Continuous release invokes `SetSourceVersion` only while preparing metadata, the
 Each module should include guard tests that enforce the blueprint.
 At minimum, test that:
 
-- `Tools/build.requirements.psd1` pins `AtlassianPS.Standards` to the intended version.
-- Every `AtlassianPS.Standards/.github/actions/*` workflow reference is pinned to a 40-character commit SHA.
+- `Tools/build.requirements.psd1` pins `AtlassianPSVII.Standards` to the intended version.
+- Every `AtlassianPSVII.Standards/.github/actions/*` workflow reference is pinned to a 40-character commit SHA.
 - Every Standards action pin uses the same version comment as `Tools/build.requirements.psd1`.
 - The release workflow uses `build-release-notes`.
 - The release workflow uses `body_path: ${{ steps.release_notes.outputs.release_notes_path }}`.
@@ -182,14 +182,14 @@ At minimum, test that:
 - The publish job contains no artifact stamping, rebuild, or repackaging step.
 - All third-party actions are pinned to full commit SHAs with version comments.
 - The repository does not keep a non-idempotent `.github/workflows/release.yml` beside `continuous_release.yml`.
-- The build script uses `Get-AtlassianPSReleaseNotesFromChangelog` for manifest release notes.
+- The build script uses `Get-AtlassianPSVIIReleaseNotesFromChangelog` for manifest release notes.
 - The built manifest receives release notes before the test matrix.
 - The build script keeps publishing secrets and a `Publish` task out (publishing stays in the workflow).
 - The committed source manifest keeps `PrivateData.PSData.ReleaseNotes` empty; release notes are populated only into the built artifact.
 - The repository does not contain `changelog-to-release`, `.github/changelog.configuration.json`, or copied inline parser/write-file plumbing.
 
-JiraPS is the reference implementation for these guard tests.
-Future Standards work may consolidate the checks into a shared `Test-AtlassianPSReleaseBlueprint` command.
+JiraPSVII is the reference implementation for these guard tests.
+Future Standards work may consolidate the checks into a shared `Test-AtlassianPSVIIReleaseBlueprint` command.
 
 ## Pull Request Release Intent
 
@@ -265,10 +265,10 @@ Make the `Release Intent` job a required branch protection check.
 
 For each existing module repository:
 
-1. Bump `Tools/build.requirements.psd1` to the current `AtlassianPS.Standards` version.
+1. Bump `Tools/build.requirements.psd1` to the current `AtlassianPSVII.Standards` version.
 2. Pin all Standards workflow actions to the same release commit SHA.
 3. Remove non-idempotent tag-triggered release workflows such as `.github/workflows/release.yml`.
-4. Replace local changelog parsers in build scripts with `Get-AtlassianPSReleaseNotesFromChangelog`.
+4. Replace local changelog parsers in build scripts with `Get-AtlassianPSVIIReleaseNotesFromChangelog`.
 5. Add or update drift guard tests.
 6. Add the `Release Intent` workflow and make it a required check.
 7. Add the label-based `Continuous Release` workflow.
@@ -278,7 +278,7 @@ For each existing module repository:
 
 ## Implementing Label-Based CD In A Module Repository
 
-Use this section as the implementation order when migrating another AtlassianPS module.
+Use this section as the implementation order when migrating another AtlassianPSVII module.
 Replace every `<ModuleName>`, `<standards-sha>`, and version comment with the target repository values.
 
 ### Required Labels
@@ -311,10 +311,10 @@ HOMEPAGE_PAT
 Optional secret:
 
 ```text
-ATLASSIANPS_RELEASE_BOT_TOKEN
+ATLASSIANPSVII_RELEASE_BOT_TOKEN
 ```
 
-Use `ATLASSIANPS_RELEASE_BOT_TOKEN` when branch protection or repository rules prevent `GITHUB_TOKEN` from pushing the release metadata commit and annotated tag to `master`.
+Use `ATLASSIANPSVII_RELEASE_BOT_TOKEN` when branch protection or repository rules prevent `GITHUB_TOKEN` from pushing the release metadata commit and annotated tag to `master`.
 If the repository has no branch protection, `GITHUB_TOKEN` is enough.
 
 ### Release Intent Workflow
@@ -434,7 +434,7 @@ jobs:
           release-tag: ${{ steps.plan.outputs.release_tag }}
           manifest-path: <ModuleName>/<ModuleName>.psd1
           github-token: ${{ github.token }}
-          release-bot-token: ${{ secrets.ATLASSIANPS_RELEASE_BOT_TOKEN }}
+          release-bot-token: ${{ secrets.ATLASSIANPSVII_RELEASE_BOT_TOKEN }}
 
   publish:
     name: Publish tested release artifact
@@ -475,7 +475,7 @@ jobs:
       - name: Verify checksums and provenance identity
         shell: pwsh
         run: |
-          Test-AtlassianPSReleaseProvenance `
+          Test-AtlassianPSVIIReleaseProvenance `
             -ReleasePath ./VerifiedRelease `
             -ExpectedRepository '${{ github.repository }}' `
             -ExpectedCommitSha '${{ github.event.workflow_run.head_sha }}' `
@@ -570,13 +570,13 @@ When copying templates, replace:
 
 | Placeholder | Replace with |
 |-------------|--------------|
-| `<ModuleName>` | Repository module name, for example `JiraPS` |
-| `<standards-sha>` | 40-character `AtlassianPS.Standards` release commit SHA |
+| `<ModuleName>` | Repository module name, for example `JiraPSVII` |
+| `<standards-sha>` | 40-character `AtlassianPSVII.Standards` release commit SHA |
 | `# vX.Y.Z` | Matching Standards package version comment |
 | `./Release/<ModuleName>.zip` | Actual release artifact zip path |
 | Website token secret | Existing repository secret, usually `HOMEPAGE_PAT` |
 
-Do not copy the Standards repository's self-import path unless the target repository is `AtlassianPS.Standards` itself.
+Do not copy the Standards repository's self-import path unless the target repository is `AtlassianPSVII.Standards` itself.
 
 ### Validation Before Opening The Migration PR
 

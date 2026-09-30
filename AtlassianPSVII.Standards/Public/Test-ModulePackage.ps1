@@ -22,9 +22,9 @@
         PSCustomObject with ModulePath, ManifestPath, PackagePath, Name, and Version.
 
     .EXAMPLE
-        Test-AtlassianPSModulePackage -BuildOutputPath './Release' -ModuleName 'JiraPS'
+        Test-AtlassianPSVIIModulePackage -BuildOutputPath './Release' -ModuleName 'JiraPSVII'
 
-        Validates that Release/JiraPS and Release/JiraPS.zip contain matching manifests.
+        Validates that Release/JiraPSVII and Release/JiraPSVII.zip contain matching manifests.
     #>
     [CmdletBinding()]
     [OutputType([PSCustomObject])]
@@ -65,7 +65,7 @@
         throw 'Release manifest version could not be resolved.'
     }
 
-    $packageValidationRoot = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "AtlassianPS-PackageValidation-$([Guid]::NewGuid().ToString('N'))"
+    $packageValidationRoot = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath "AtlassianPSVII-PackageValidation-$([Guid]::NewGuid().ToString('N'))"
     try {
         $null = New-Item -Path $packageValidationRoot -ItemType Directory -Force
         Expand-Archive -LiteralPath $PackagePath -DestinationPath $packageValidationRoot -Force

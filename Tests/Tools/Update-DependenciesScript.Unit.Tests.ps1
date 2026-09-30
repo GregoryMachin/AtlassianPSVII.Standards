@@ -6,7 +6,7 @@ BeforeAll {
 
 Describe 'Tools/update.dependencies.ps1' {
     AfterEach {
-        Get-Module -Name 'AtlassianPS.Standards' |
+        Get-Module -Name 'AtlassianPSVII.Standards' |
             Where-Object { $_.ModuleBase -like "$TestDrive*" } |
             Remove-Module -Force -ErrorAction SilentlyContinue
     }
@@ -36,7 +36,7 @@ Export-ModuleMember -Function Update-DependencyReference
         $result = & $harness.ScriptPath -SkipBuildRequirement -SkipManifestRequirement
 
         $result.BuildRequirementsPath | Should -Be (Join-Path -Path $harness.Root -ChildPath 'Tools/build.requirements.psd1')
-        $result.ManifestPath | Should -Be (Join-Path -Path $harness.Root -ChildPath 'AtlassianPS.Standards/AtlassianPS.Standards.psd1')
+        $result.ManifestPath | Should -Be (Join-Path -Path $harness.Root -ChildPath 'AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1')
         $result.SkipBuildRequirement | Should -BeTrue
         $result.SkipManifestRequirement | Should -BeTrue
     }

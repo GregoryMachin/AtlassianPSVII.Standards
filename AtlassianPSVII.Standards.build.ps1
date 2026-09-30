@@ -31,7 +31,7 @@ param(
     [String]$RunId
 )
 
-$projectName = 'AtlassianPS.Standards'
+$projectName = 'AtlassianPSVII.Standards'
 $moduleManifestPath = Join-Path -Path $PSScriptRoot -ChildPath "$projectName/$projectName.psd1"
 
 try {
@@ -41,24 +41,24 @@ catch {
     throw "Failed to import '$projectName'. Run './Tools/setup.ps1' and retry. Original error: $($_.Exception.Message)"
 }
 
-$script:BuildInfo = Initialize-AtlassianPSBuildEnvironment `
+$script:BuildInfo = Initialize-AtlassianPSVIIBuildEnvironment `
     -ProjectName $projectName `
     -ProjectPath $PSScriptRoot `
     -VersionToPublish $VersionToPublish `
     -ResetBuildEnvironmentVariables
 
 Task ShowDebugInfo {
-    Write-AtlassianPSBuildInfo -BuildInfo $script:BuildInfo
+    Write-AtlassianPSVIIBuildInfo -BuildInfo $script:BuildInfo
 }
 
 Task Lint {
-    $null = Invoke-AtlassianPSModuleTests `
+    $null = Invoke-AtlassianPSVIIModuleTests `
         -TestPath (Join-Path -Path $env:BHProjectPath -ChildPath 'Tests/DependencyConsistency.Tests.ps1') `
         -PesterVerbosity $PesterVerbosity `
         -DefaultExcludeTag @()
 
-    Invoke-AtlassianPSLint `
-        -BuildScriptPath "$env:BHProjectPath/AtlassianPS.Standards.build.ps1" `
+    Invoke-AtlassianPSVIILint `
+        -BuildScriptPath "$env:BHProjectPath/AtlassianPSVII.Standards.build.ps1" `
         -PesterVerbosity $PesterVerbosity
 }
 
@@ -76,7 +76,7 @@ Task CopyBuildArtifacts {
         'LICENSE'
     )
 
-    $null = Copy-AtlassianPSModuleArtifacts `
+    $null = Copy-AtlassianPSVIIModuleArtifacts `
         -ProjectPath $env:BHProjectPath `
         -ModuleName $env:BHProjectName `
         -BuildOutputPath $env:BHBuildOutput `
@@ -89,12 +89,12 @@ Task Build Clean, CopyBuildArtifacts, CompileModule, UpdateManifest, SetArtifact
 # Synopsis: Compile all functions into the .psm1 file
 Task CompileModule {
     $releaseModulePath = Join-Path -Path $env:BHBuildOutput -ChildPath $env:BHProjectName
-    $null = Join-AtlassianPSModuleSource -ReleaseModulePath $releaseModulePath
+    $null = Join-AtlassianPSVIIModuleSource -ReleaseModulePath $releaseModulePath
 }
 
 # Synopsis: Update the manifest of the module
 Task UpdateManifest {
-    $null = Update-AtlassianPSModuleManifestExports `
+    $null = Update-AtlassianPSVIIModuleManifestExports `
         -SourceModulePath $env:BHModulePath `
         -BuiltManifestPath $script:BuildInfo.BuiltManifestPath `
         -ModuleName $env:BHProjectName
@@ -108,12 +108,12 @@ Task SetArtifactReleaseNotes {
     $releaseVersion = 'v{0}{1}' -f $built.ModuleVersion, $(
         if ([String]::IsNullOrWhiteSpace($prerelease)) { '' } else { "-$prerelease" }
     )
-    $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
+    $releaseNotes = Get-AtlassianPSVIIReleaseNotesFromChangelog `
         -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
         -ReleaseVersion $releaseVersion `
         -ErrorAction Stop
 
-    $null = Set-AtlassianPSModuleManifestVersion `
+    $null = Set-AtlassianPSVIIModuleManifestVersion `
         -BuiltManifestPath $builtManifestPath `
         -ModuleName $env:BHProjectName `
         -VersionToPublish $releaseVersion `
@@ -123,7 +123,7 @@ Task SetArtifactReleaseNotes {
 
 Task Test {
     $resultOutputPath = Join-Path -Path $env:BHProjectPath -ChildPath "Test-$($script:BuildInfo.OS)-$($PSVersionTable.PSVersion.ToString()).xml"
-    $null = Invoke-AtlassianPSModuleTests `
+    $null = Invoke-AtlassianPSVIIModuleTests `
         -TestPath (Join-Path -Path $env:BHProjectPath -ChildPath 'Tests') `
         -PesterVerbosity $PesterVerbosity `
         -Tag $Tag `
@@ -138,7 +138,7 @@ Task SetSourceVersion {
         throw 'VersionToPublish is required for SetSourceVersion. Use -VersionToPublish <semver>.'
     }
 
-    $null = Set-AtlassianPSModuleManifestVersion `
+    $null = Set-AtlassianPSVIIModuleManifestVersion `
         -BuiltManifestPath $env:BHPSModuleManifest `
         -ModuleName $env:BHProjectName `
         -VersionToPublish $script:BuildInfo.VersionToPublish
@@ -162,7 +162,7 @@ Task SetVersion {
     }
 
     $changelogPath = Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md'
-    $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog -ChangelogPath $changelogPath -ReleaseVersion $script:BuildInfo.VersionToPublish
+    $releaseNotes = Get-AtlassianPSVIIReleaseNotesFromChangelog -ChangelogPath $changelogPath -ReleaseVersion $script:BuildInfo.VersionToPublish
 
     $setVersionParameters = @{
         BuiltManifestPath = $builtManifestPath
@@ -174,7 +174,7 @@ Task SetVersion {
         $setVersionParameters.EnforceGreaterThanPublished = $true
     }
 
-    $null = Set-AtlassianPSModuleManifestVersion @setVersionParameters
+    $null = Set-AtlassianPSVIIModuleManifestVersion @setVersionParameters
 
     if ($VerifyPublishedRelease) {
         $stamped = Import-PowerShellDataFile -LiteralPath $builtManifestPath
@@ -189,7 +189,7 @@ Task SetVersion {
 
 # Synopsis: Compress the built module into the publishable release artifact
 Task Package {
-    $script:PackagePath = New-AtlassianPSModulePackage `
+    $script:PackagePath = New-AtlassianPSVIIModulePackage `
         -BuildOutputPath $env:BHBuildOutput `
         -ModuleName $env:BHProjectName
 }
@@ -207,7 +207,7 @@ Task Provenance Package, {
         }
     }
 
-    $script:Provenance = New-AtlassianPSReleaseProvenance `
+    $script:Provenance = New-AtlassianPSVIIReleaseProvenance `
         -PackagePath $script:PackagePath `
         -ModuleManifestPath $script:BuildInfo.BuiltManifestPath `
         -BuildRequirementsPath (Join-Path -Path $env:BHProjectPath -ChildPath 'Tools/build.requirements.psd1') `
@@ -219,7 +219,7 @@ Task Provenance Package, {
 }
 
 Task TestPublish Build, Package, {
-    $null = Test-AtlassianPSModulePackage `
+    $null = Test-AtlassianPSVIIModulePackage `
         -BuildOutputPath $env:BHBuildOutput `
         -ModuleName $env:BHProjectName `
         -PackagePath $script:PackagePath

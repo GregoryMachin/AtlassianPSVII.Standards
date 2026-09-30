@@ -6,7 +6,7 @@ BeforeAll {
 
 Describe 'Tools/setup.ps1' {
     AfterEach {
-        Get-Module -Name 'AtlassianPS.Standards' |
+        Get-Module -Name 'AtlassianPSVII.Standards' |
             Where-Object { $_.ModuleBase -like "$TestDrive*" } |
             Remove-Module -Force -ErrorAction SilentlyContinue
     }
@@ -35,7 +35,7 @@ Export-ModuleMember -Function Install-DependencyRequirement
 
         $captured = Get-Content -LiteralPath $capturePath -Raw | ConvertFrom-Json
         $captured.BuildRequirementsPath | Should -Be (Join-Path -Path $harness.Root -ChildPath 'Tools/build.requirements.psd1')
-        $captured.ManifestPath | Should -Be (Join-Path -Path $harness.Root -ChildPath 'AtlassianPS.Standards/AtlassianPS.Standards.psd1')
+        $captured.ManifestPath | Should -Be (Join-Path -Path $harness.Root -ChildPath 'AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1')
     }
 
     It 'fails fast when shared installer emits a non-terminating error' {

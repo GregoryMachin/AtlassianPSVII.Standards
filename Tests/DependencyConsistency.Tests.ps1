@@ -2,7 +2,7 @@
 
 BeforeAll {
     $projectRoot = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath
-    $manifestPath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+    $manifestPath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
     $buildRequirementsPath = Join-Path -Path $projectRoot -ChildPath 'Tools/build.requirements.psd1'
 
     $script:manifestData = Import-PowerShellDataFile -Path $manifestPath
@@ -20,10 +20,10 @@ BeforeAll {
         }
     )
     $script:publicFunctionNames = @(
-        Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards/Public/*.ps1') -ErrorAction SilentlyContinue
+        Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath 'AtlassianPSVII.Standards/Public/*.ps1') -ErrorAction SilentlyContinue
     ).BaseName
     $script:privateFunctionNames = @(
-        Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards/Private/*.ps1') -ErrorAction SilentlyContinue
+        Get-ChildItem -Path (Join-Path -Path $projectRoot -ChildPath 'AtlassianPSVII.Standards/Private/*.ps1') -ErrorAction SilentlyContinue
     ).BaseName
 }
 

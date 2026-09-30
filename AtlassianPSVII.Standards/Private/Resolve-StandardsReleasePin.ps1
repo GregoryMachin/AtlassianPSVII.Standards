@@ -6,10 +6,10 @@
         [String]$RequestedVersion
     )
 
-    $moduleName = 'AtlassianPS.Standards'
+    $moduleName = 'AtlassianPSVII.Standards'
     $repositoryApiRoot = 'https://api.github.com/repos/AtlassianPS/AtlassianPS.Standards'
     if ($RequestedVersion -and $RequestedVersion -notmatch '^\d+\.\d+\.\d+$') {
-        throw "Invalid AtlassianPS.Standards version '$RequestedVersion'. Expected X.Y.Z."
+        throw "Invalid AtlassianPSVII.Standards version '$RequestedVersion'. Expected X.Y.Z."
     }
 
     try {

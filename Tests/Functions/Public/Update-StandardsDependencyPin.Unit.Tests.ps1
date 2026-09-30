@@ -56,7 +56,7 @@ BeforeAll {
             '@(@{ ModuleName = "InvokeBuild"; RequiredVersion = "5.14.23" })'
         }
         else {
-            "@(@{ ModuleName = `"AtlassianPS.Standards`"; RequiredVersion = `"$Version`" })"
+            "@(@{ ModuleName = `"AtlassianPSVII.Standards`"; RequiredVersion = `"$Version`" })"
         }
         $requirementsPath = Join-Path -Path $toolsPath -ChildPath 'build.requirements.psd1'
         Set-Content -LiteralPath $requirementsPath -Value $requirements
@@ -89,7 +89,7 @@ steps:
 
 Describe 'Update-StandardsDependencyPin' {
     BeforeEach {
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             Mock -CommandName Find-Module -MockWith {
                 [PSCustomObject]@{ Version = [Version]'0.1.12' }
             }
@@ -105,7 +105,7 @@ Describe 'Update-StandardsDependencyPin' {
     }
 
     It 'is exported with comment-based help' {
-        $command = Get-Command -Name 'Update-AtlassianPSStandardsDependencyPin' -ErrorAction Stop
+        $command = Get-Command -Name 'Update-AtlassianPSVIIStandardsDependencyPin' -ErrorAction Stop
         $command | Should -Not -BeNullOrEmpty
         (Get-Help -Name $command.Name).Synopsis | Should -Not -BeNullOrEmpty
     }
@@ -115,7 +115,7 @@ Describe 'Update-StandardsDependencyPin' {
             -Path (Join-Path $TestDrive 'repository with spaces') `
             -WorkflowCount 2
 
-        $result = Update-AtlassianPSStandardsDependencyPin `
+        $result = Update-AtlassianPSVIIStandardsDependencyPin `
             -RepositoryRoot $fixture.Root `
             -Version '0.1.12' `
             -SetupActionCommitSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
@@ -136,7 +136,7 @@ Describe 'Update-StandardsDependencyPin' {
         $beforeRequirement = Get-Content -LiteralPath $fixture.RequirementsPath -Raw
         $beforeWorkflow = Get-Content -LiteralPath $fixture.WorkflowPath[0] -Raw
 
-        $result = Update-AtlassianPSStandardsDependencyPin `
+        $result = Update-AtlassianPSVIIStandardsDependencyPin `
             -RepositoryRoot $fixture.Root `
             -Version '0.1.12' `
             -WhatIf
@@ -154,7 +154,7 @@ Describe 'Update-StandardsDependencyPin' {
             -CommitSha 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' `
             -WorkflowCount 2
 
-        $result = Update-AtlassianPSStandardsDependencyPin `
+        $result = Update-AtlassianPSVIIStandardsDependencyPin `
             -RepositoryRoot $fixture.Root `
             -Version '0.1.12'
 
@@ -169,7 +169,7 @@ Describe 'Update-StandardsDependencyPin' {
             -OmitRequirement
 
         {
-            Update-AtlassianPSStandardsDependencyPin `
+            Update-AtlassianPSVIIStandardsDependencyPin `
                 -RepositoryRoot $fixture.Root `
                 -Version '0.1.12'
         } | Should -Throw -ExpectedMessage '*Expected exactly one*requirement*found 0*'
@@ -181,7 +181,7 @@ Describe 'Update-StandardsDependencyPin' {
             -OmitActionPin
 
         {
-            Update-AtlassianPSStandardsDependencyPin `
+            Update-AtlassianPSVIIStandardsDependencyPin `
                 -RepositoryRoot $fixture.Root `
                 -Version '0.1.12'
         } | Should -Throw -ExpectedMessage '*No trusted*setup-powershell*commit pins*'
@@ -191,12 +191,12 @@ Describe 'Update-StandardsDependencyPin' {
         $fixture = New-StandardsPinRepositoryFixture -Path (Join-Path $TestDrive 'invalid version')
 
         {
-            Update-AtlassianPSStandardsDependencyPin `
+            Update-AtlassianPSVIIStandardsDependencyPin `
                 -RepositoryRoot $fixture.Root `
                 -Version 'latest'
-        } | Should -Throw -ExpectedMessage '*Invalid AtlassianPS.Standards version*'
+        } | Should -Throw -ExpectedMessage '*Invalid AtlassianPSVII.Standards version*'
 
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             Should -Invoke -CommandName Find-Module -Times 0
         }
     }
@@ -204,14 +204,14 @@ Describe 'Update-StandardsDependencyPin' {
     It 'fails without changing files when the trusted tag lookup fails' {
         $fixture = New-StandardsPinRepositoryFixture -Path (Join-Path $TestDrive 'lookup failure')
         $beforeRequirement = Get-Content -LiteralPath $fixture.RequirementsPath -Raw
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             Mock -CommandName Invoke-RestMethod -MockWith {
                 throw 'simulated tag lookup failure'
             }
         }
 
         {
-            Update-AtlassianPSStandardsDependencyPin `
+            Update-AtlassianPSVIIStandardsDependencyPin `
                 -RepositoryRoot $fixture.Root `
                 -Version '0.1.12'
         } | Should -Throw -ExpectedMessage '*Unable to resolve trusted GitHub tag*'
@@ -221,19 +221,19 @@ Describe 'Update-StandardsDependencyPin' {
 
     It 'fails without calling GitHub when the trusted package lookup fails' {
         $fixture = New-StandardsPinRepositoryFixture -Path (Join-Path $TestDrive 'package lookup failure')
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             Mock -CommandName Find-Module -MockWith {
                 throw 'simulated package lookup failure'
             }
         }
 
         {
-            Update-AtlassianPSStandardsDependencyPin `
+            Update-AtlassianPSVIIStandardsDependencyPin `
                 -RepositoryRoot $fixture.Root `
                 -Version '0.1.12'
         } | Should -Throw -ExpectedMessage '*Unable to resolve trusted PSGallery package*'
 
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             Should -Invoke -CommandName Invoke-RestMethod -Times 0
         }
     }
@@ -242,7 +242,7 @@ Describe 'Update-StandardsDependencyPin' {
         $fixture = New-StandardsPinRepositoryFixture -Path (Join-Path $TestDrive 'sha mismatch')
 
         {
-            Update-AtlassianPSStandardsDependencyPin `
+            Update-AtlassianPSVIIStandardsDependencyPin `
                 -RepositoryRoot $fixture.Root `
                 -Version '0.1.12' `
                 -SetupActionCommitSha 'cccccccccccccccccccccccccccccccccccccccc'
@@ -254,7 +254,7 @@ Describe 'Update-StandardsDependencyPin' {
         $beforeRequirement = Get-Content -LiteralPath $fixture.RequirementsPath -Raw
         $beforeWorkflow = Get-Content -LiteralPath $fixture.WorkflowPath[0] -Raw
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             RepositoryRoot = $fixture.Root
         } {
             param($RepositoryRoot)
@@ -285,7 +285,7 @@ Describe 'Update-StandardsDependencyPin' {
             -ActionCoordinate 'example/Untrusted/.github/actions/setup-powershell'
 
         {
-            Update-AtlassianPSStandardsDependencyPin `
+            Update-AtlassianPSVIIStandardsDependencyPin `
                 -RepositoryRoot $fixture.Root `
                 -Version '0.1.12'
         } | Should -Throw -ExpectedMessage '*Untrusted setup action coordinate*'

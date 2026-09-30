@@ -1,16 +1,16 @@
 # API Quality Primitives
 
 The Standards module provides four additive primitives for API contract tests and scheduled canaries.
-They operate on parsed objects so JiraPS, JiraAgilePS, and ConfluencePS can keep repository-specific Markdown parsing and transport logic local.
+They operate on parsed objects so JiraPSVII, JiraAgilePSVII, and ConfluencePSVII can keep repository-specific Markdown parsing and transport logic local.
 
 ## Operation inventory conformance
 
-`Test-AtlassianPSApiOperationInventory` compares exported command names with parsed inventory rows.
+`Test-AtlassianPSVIIApiOperationInventory` compares exported command names with parsed inventory rows.
 It reports missing, unexpected, duplicate, and incomplete rows in a stable result schema.
 Use `-ThrowOnFailure` in a build gate.
 
 ```powershell
-$result = Test-AtlassianPSApiOperationInventory `
+$result = Test-AtlassianPSVIIApiOperationInventory `
     -CommandName $exportedCommands `
     -InventoryRow $inventoryRows `
     -RequiredProperty Command, Method, CloudRoute, DataCenterRoute `
@@ -19,12 +19,12 @@ $result = Test-AtlassianPSApiOperationInventory `
 
 ## Safe response-header assertions
 
-`Test-AtlassianPSApiResponseHeader` validates expected header values and rejects malformed header names or values.
+`Test-AtlassianPSVIIApiResponseHeader` validates expected header values and rejects malformed header names or values.
 Its output always redacts authorization, proxy authorization, cookies, set-cookie, API keys, token-like headers, secret-like headers, and names supplied through `-SensitiveHeader`.
 Mismatch diagnostics for those headers are also redacted.
 
 ```powershell
-$assertion = Test-AtlassianPSApiResponseHeader `
+$assertion = Test-AtlassianPSVIIApiResponseHeader `
     -Header $response.Headers `
     -ExpectedHeader @{ 'X-RateLimit-Remaining' = '42' } `
     -SensitiveHeader 'X-Internal-Trace'
@@ -35,12 +35,12 @@ Log only `RedactedHeaders` or the complete assertion result.
 
 ## Sunset thresholds
 
-`Test-AtlassianPSApiSunset` classifies operation sunset dates as `Current`, `Warning`, `Failing`, `Expired`, or `Invalid`.
+`Test-AtlassianPSVIIApiSunset` classifies operation sunset dates as `Current`, `Warning`, `Failing`, `Expired`, or `Invalid`.
 The failure threshold must be less than or equal to the warning threshold.
 Expired, invalid, and failure-threshold results make the summary noncompliant.
 
 ```powershell
-Test-AtlassianPSApiSunset `
+Test-AtlassianPSVIIApiSunset `
     -Operation $inventoryRows `
     -NameProperty Command `
     -SunsetProperty SunsetDate `
@@ -53,13 +53,13 @@ Pass a fixed `-Now` value in unit tests.
 
 ## Scheduled canary results
 
-`ConvertTo-AtlassianPSApiCanaryResult` emits a fixed versioned property order, UTC timestamps, duration in milliseconds, and deterministically sorted metadata.
+`ConvertTo-AtlassianPSVIIApiCanaryResult` emits a fixed versioned property order, UTC timestamps, duration in milliseconds, and deterministically sorted metadata.
 Use `-AsJson` for compact machine-readable output.
 Sensitive metadata keys and recognizable credentials in messages are redacted.
 
 ```powershell
-ConvertTo-AtlassianPSApiCanaryResult `
-    -Repository JiraPS `
+ConvertTo-AtlassianPSVIIApiCanaryResult `
+    -Repository JiraPSVII `
     -Operation Search-Issue `
     -DeploymentType Cloud `
     -Status Passed `

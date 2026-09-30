@@ -31,7 +31,7 @@ Describe 'Import-DotEnvFile' {
         )
         [Environment]::SetEnvironmentVariable('ATLAS_TEST_ENV_EXISTING', 'from-process')
 
-        $result = Import-AtlassianPSDotEnvFile -Path $envFile
+        $result = Import-AtlassianPSVIIDotEnvFile -Path $envFile
 
         $env:ATLAS_TEST_ENV_EXISTING | Should -Be 'from-file'
         $env:ATLAS_TEST_ENV_ALLOWED | Should -Be 'value'
@@ -47,7 +47,7 @@ Describe 'Import-DotEnvFile' {
             'ATLAS_TEST_ENV_EXCLUDED=skip-me'
         )
 
-        $null = Import-AtlassianPSDotEnvFile -Path $envFile -ExcludeName 'ATLAS_TEST_ENV_EXCLUDED'
+        $null = Import-AtlassianPSVIIDotEnvFile -Path $envFile -ExcludeName 'ATLAS_TEST_ENV_EXCLUDED'
 
         $env:ATLAS_TEST_ENV_HASH | Should -Be 'abc#123'
         $env:ATLAS_TEST_ENV_QUOTED | Should -Be 'quoted # value'
@@ -55,7 +55,7 @@ Describe 'Import-DotEnvFile' {
     }
 
     It 'ignores missing files' {
-        $result = Import-AtlassianPSDotEnvFile -Path (Join-Path -Path $TestDrive -ChildPath 'missing.env')
+        $result = Import-AtlassianPSVIIDotEnvFile -Path (Join-Path -Path $TestDrive -ChildPath 'missing.env')
 
         $result | Should -BeNullOrEmpty
     }
@@ -71,7 +71,7 @@ Describe 'Test-ModulePackage' {
         Set-Content -LiteralPath (Join-Path -Path $modulePath -ChildPath "$moduleName.psm1") -Value ''
         Compress-Archive -Path $modulePath -DestinationPath (Join-Path -Path $buildOutput -ChildPath "$moduleName.zip")
 
-        $result = Test-AtlassianPSModulePackage -BuildOutputPath $buildOutput -ModuleName $moduleName
+        $result = Test-AtlassianPSVIIModulePackage -BuildOutputPath $buildOutput -ModuleName $moduleName
 
         $result.Name | Should -Be $moduleName
         $result.Version | Should -Be ([Version]'1.2.3')
@@ -86,7 +86,7 @@ Describe 'Test-ModulePackage' {
         Set-Content -LiteralPath (Join-Path -Path $modulePath -ChildPath "$moduleName.psm1") -Value ''
 
         {
-            Test-AtlassianPSModulePackage -BuildOutputPath $buildOutput -ModuleName $moduleName
+            Test-AtlassianPSVIIModulePackage -BuildOutputPath $buildOutput -ModuleName $moduleName
         } | Should -Throw -ExpectedMessage 'Release package was not created*'
     }
 
@@ -102,7 +102,7 @@ Describe 'Test-ModulePackage' {
         Compress-Archive -Path $otherPath -DestinationPath (Join-Path -Path $buildOutput -ChildPath "$moduleName.zip")
 
         {
-            Test-AtlassianPSModulePackage -BuildOutputPath $buildOutput -ModuleName $moduleName
+            Test-AtlassianPSVIIModulePackage -BuildOutputPath $buildOutput -ModuleName $moduleName
         } | Should -Throw -ExpectedMessage '*does not contain expected manifest*'
     }
 }
@@ -122,7 +122,7 @@ Describe 'Remove-OrphanedExternalHelp' {
         Set-Content -LiteralPath (Join-Path -Path $localeOut -ChildPath 'about_Module.help.txt') -Value 'about'
         Set-Content -LiteralPath (Join-Path -Path $localeOut -ChildPath 'orphan.help.txt') -Value 'orphan'
 
-        Remove-AtlassianPSOrphanedExternalHelp -ModulePath $modulePath -DocsPath $docsPath -ModuleName 'Module'
+        Remove-AtlassianPSVIIOrphanedExternalHelp -ModulePath $modulePath -DocsPath $docsPath -ModuleName 'Module'
 
         Test-Path -LiteralPath (Join-Path -Path $localeOut -ChildPath 'Module-help.xml') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path -Path $localeOut -ChildPath 'about_Module.help.txt') | Should -BeTrue
@@ -141,7 +141,7 @@ Describe 'Remove-OrphanedExternalHelp' {
         Set-Content -LiteralPath (Join-Path -Path $localeOut -ChildPath 'about_Module.help.txt') -Value 'about'
         Set-Content -LiteralPath (Join-Path -Path $localeOut -ChildPath 'orphan.help.txt') -Value 'orphan'
 
-        Remove-AtlassianPSOrphanedExternalHelp -ModulePath $modulePath -DocsPath $docsPath -ModuleName 'Module' -AboutTopicRelativePath @('about_*.md', 'commands/about_*.md')
+        Remove-AtlassianPSVIIOrphanedExternalHelp -ModulePath $modulePath -DocsPath $docsPath -ModuleName 'Module' -AboutTopicRelativePath @('about_*.md', 'commands/about_*.md')
 
         Test-Path -LiteralPath (Join-Path -Path $localeOut -ChildPath 'about_Module.help.txt') | Should -BeTrue
         Test-Path -LiteralPath (Join-Path -Path $localeOut -ChildPath 'orphan.help.txt') | Should -BeFalse

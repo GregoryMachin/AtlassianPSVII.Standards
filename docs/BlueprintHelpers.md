@@ -1,11 +1,11 @@
 # Blueprint Primitives
 
-`AtlassianPS.Standards` provides small helpers for repeated JiraPS-style build and test details.
+`AtlassianPSVII.Standards` provides small helpers for repeated JiraPSVII-style build and test details.
 Repository build scripts should stay readable: keep task orchestration in the repository and call these commands only for concrete operations.
 For the cross-repository release strategy, see [ReleaseBlueprint.md](ReleaseBlueprint.md).
 
-The module manifest sets `DefaultCommandPrefix = 'AtlassianPS'`.
-Consumers call commands with the prefixed names, for example `Test-AtlassianPSModulePackage`.
+The module manifest sets `DefaultCommandPrefix = 'AtlassianPSVII'`.
+Consumers call commands with the prefixed names, for example `Test-AtlassianPSVIIModulePackage`.
 
 ## Helper Contracts
 
@@ -26,7 +26,7 @@ Prefer explicit task dependencies and concrete helper calls over a generic build
 Task Build Clean, CopyBuildArtifacts, CompileModule, UpdateManifest
 
 Task CopyBuildArtifacts {
-    $null = Copy-AtlassianPSModuleArtifacts `
+    $null = Copy-AtlassianPSVIIModuleArtifacts `
         -ProjectPath $env:BHProjectPath `
         -ModuleName $env:BHProjectName `
         -BuildOutputPath $env:BHBuildOutput `
@@ -36,11 +36,11 @@ Task CopyBuildArtifacts {
 
 Task CompileModule {
     $releaseModulePath = Join-Path -Path $env:BHBuildOutput -ChildPath $env:BHProjectName
-    $null = Join-AtlassianPSModuleSource -ReleaseModulePath $releaseModulePath
+    $null = Join-AtlassianPSVIIModuleSource -ReleaseModulePath $releaseModulePath
 }
 
 Task UpdateManifest {
-    $null = Update-AtlassianPSModuleManifestExports `
+    $null = Update-AtlassianPSVIIModuleManifestExports `
         -SourceModulePath $env:BHModulePath `
         -BuiltManifestPath $script:BuildInfo.BuiltManifestPath `
         -ModuleName $env:BHProjectName
@@ -55,11 +55,11 @@ Continuous release verifies and extracts the attested ZIP without rebuilding it.
 
 ```powershell
 Task TestPublish Build, {
-    $packagePath = New-AtlassianPSModulePackage `
+    $packagePath = New-AtlassianPSVIIModulePackage `
         -BuildOutputPath $env:BHBuildOutput `
         -ModuleName $env:BHProjectName
 
-    $null = Test-AtlassianPSModulePackage `
+    $null = Test-AtlassianPSVIIModulePackage `
         -BuildOutputPath $env:BHBuildOutput `
         -ModuleName $env:BHProjectName `
         -PackagePath $packagePath
@@ -69,7 +69,7 @@ Task TestPublish Build, {
 Create provenance beside the package:
 
 ```powershell
-$provenance = New-AtlassianPSReleaseProvenance `
+$provenance = New-AtlassianPSVIIReleaseProvenance `
     -PackagePath $packagePath `
     -ModuleManifestPath $script:BuildInfo.BuiltManifestPath `
     -BuildRequirementsPath ./Tools/build.requirements.psd1 `
@@ -80,7 +80,7 @@ $provenance = New-AtlassianPSReleaseProvenance `
     -OutputPath $env:BHBuildOutput
 ```
 
-`Test-AtlassianPSReleaseProvenance` verifies the recorded repository, commit, run, release tag, SHA-256 values, and required attestation-bundle presence.
+`Test-AtlassianPSVIIReleaseProvenance` verifies the recorded repository, commit, run, release tag, SHA-256 values, and required attestation-bundle presence.
 Follow it with `gh attestation verify` to validate the signature and trusted CI identity.
 
 ## Release Notes
@@ -106,11 +106,11 @@ Use the shared `build-release-notes` action in GitHub workflows so repositories 
 Task SetArtifactReleaseNotes {
     $built = Import-PowerShellDataFile -LiteralPath $script:BuildInfo.BuiltManifestPath
     $releaseVersion = "v$($built.ModuleVersion)"
-    $releaseNotes = Get-AtlassianPSReleaseNotesFromChangelog `
+    $releaseNotes = Get-AtlassianPSVIIReleaseNotesFromChangelog `
         -ChangelogPath (Join-Path -Path $env:BHProjectPath -ChildPath 'CHANGELOG.md') `
         -ReleaseVersion $releaseVersion
 
-    $null = Set-AtlassianPSModuleManifestVersion `
+    $null = Set-AtlassianPSVIIModuleManifestVersion `
         -BuiltManifestPath $script:BuildInfo.BuiltManifestPath `
         -ModuleName $env:BHProjectName `
         -VersionToPublish $releaseVersion `
@@ -118,7 +118,7 @@ Task SetArtifactReleaseNotes {
 }
 ```
 
-`Get-AtlassianPSReleaseNotesFromChangelog` also accepts historical headings without the `v` prefix and dated headings like `## 1.2.3 - 2026-05-10`, so repositories can migrate existing changelogs without local parser code.
+`Get-AtlassianPSVIIReleaseNotesFromChangelog` also accepts historical headings without the `v` prefix and dated headings like `## 1.2.3 - 2026-05-10`, so repositories can migrate existing changelogs without local parser code.
 
 ## Release Changelog Preparation
 
@@ -143,15 +143,15 @@ It does not publish by itself; the workflow remains responsible for committing t
 
 ## External Help
 
-The help generator wraps the PlatyPS v1 behavior expected by AtlassianPS modules, including nested MAML flattening and MAML metadata repair for aliases, pipeline input, default values, and examples.
+The help generator wraps the PlatyPS v1 behavior expected by AtlassianPSVII modules, including nested MAML flattening and MAML metadata repair for aliases, pipeline input, default values, and examples.
 
 ```powershell
-Update-AtlassianPSExternalHelp `
+Update-AtlassianPSVIIExternalHelp `
     -DocsPath "$env:BHProjectPath/docs" `
     -ModulePath $env:BHModulePath `
     -ModuleName $env:BHProjectName
 
-Remove-AtlassianPSOrphanedExternalHelp `
+Remove-AtlassianPSVIIOrphanedExternalHelp `
     -DocsPath "$env:BHProjectPath/docs" `
     -ModulePath $env:BHModulePath `
     -ModuleName $env:BHProjectName
@@ -159,21 +159,21 @@ Remove-AtlassianPSOrphanedExternalHelp `
 
 ## Test Bootstrap
 
-Use `Initialize-AtlassianPSModuleTestEnvironment` from Pester `BeforeAll` blocks when a repository only needs the standard source/release manifest resolution and module import.
+Use `Initialize-AtlassianPSVIIModuleTestEnvironment` from Pester `BeforeAll` blocks when a repository only needs the standard source/release manifest resolution and module import.
 
 ```powershell
 BeforeAll {
-    Import-Module AtlassianPS.Standards
-    $script:moduleToTest = Initialize-AtlassianPSModuleTestEnvironment `
-        -ModuleName 'JiraPS' `
+    Import-Module AtlassianPSVII.Standards
+    $script:moduleToTest = Initialize-AtlassianPSVIIModuleTestEnvironment `
+        -ModuleName 'JiraPSVII' `
         -StartPath $PSScriptRoot
 }
 ```
 
-Use `Resolve-AtlassianPSProjectRoot` and `Resolve-AtlassianPSModuleSource` directly when a test needs only path resolution.
+Use `Resolve-AtlassianPSVIIProjectRoot` and `Resolve-AtlassianPSVIIModuleSource` directly when a test needs only path resolution.
 
 ## Integration Tests
 
 Keep integration orchestration local when it knows product semantics: Cloud/Data Center variable names, typed test contexts, Docker Compose service names, provisioning, fixture setup, and cleanup.
 
-Use `Import-AtlassianPSDotEnvFile` as the shared primitive for local `.env` loading, then validate product-specific environment variables in the repository helper.
+Use `Import-AtlassianPSVIIDotEnvFile` as the shared primitive for local `.env` loading, then validate product-specific environment variables in the repository helper.

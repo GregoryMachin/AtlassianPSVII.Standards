@@ -7,17 +7,17 @@ BeforeAll {
 
 Describe 'Write-BuildInfo' {
     It 'writes formatted lines when Write-Build is unavailable' {
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             Mock -CommandName Get-Command -MockWith { $null } -ParameterFilter { $Name -eq 'Write-Build' }
 
             $buildInfo = [PSCustomObject]@{
                 BuildSystem       = 'Local'
-                ProjectName       = 'AtlassianPS.Standards'
+                ProjectName       = 'AtlassianPSVII.Standards'
                 ProjectPath       = '/tmp/project'
-                ModulePath        = '/tmp/project/AtlassianPS.Standards'
-                ModuleManifest    = '/tmp/project/AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+                ModulePath        = '/tmp/project/AtlassianPSVII.Standards'
+                ModuleManifest    = '/tmp/project/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
                 BuildOutputPath   = '/tmp/project/Release'
-                BuiltManifestPath = '/tmp/project/Release/AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+                BuiltManifestPath = '/tmp/project/Release/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
                 BranchName        = 'main'
                 CommitHash        = 'abc123'
                 CommitMessage     = 'test'
@@ -28,12 +28,12 @@ Describe 'Write-BuildInfo' {
             }
 
             $output = @(Write-BuildInfo -BuildInfo $buildInfo)
-            ($output -join "`n") | Should -Match 'BHProjectName:\s+AtlassianPS\.Standards'
+            ($output -join "`n") | Should -Match 'BHProjectName:\s+AtlassianPSVII\.Standards'
         }
     }
 
     It 'uses Write-Build when it is available' {
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             function Write-Build {
                 param(
                     [string]$Color,
@@ -44,12 +44,12 @@ Describe 'Write-BuildInfo' {
 
             $buildInfo = [PSCustomObject]@{
                 BuildSystem       = 'Local'
-                ProjectName       = 'AtlassianPS.Standards'
+                ProjectName       = 'AtlassianPSVII.Standards'
                 ProjectPath       = '/tmp/project'
-                ModulePath        = '/tmp/project/AtlassianPS.Standards'
-                ModuleManifest    = '/tmp/project/AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+                ModulePath        = '/tmp/project/AtlassianPSVII.Standards'
+                ModuleManifest    = '/tmp/project/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
                 BuildOutputPath   = '/tmp/project/Release'
-                BuiltManifestPath = '/tmp/project/Release/AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+                BuiltManifestPath = '/tmp/project/Release/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
                 BranchName        = 'main'
                 CommitHash        = 'abc123'
                 CommitMessage     = 'test'
@@ -66,17 +66,17 @@ Describe 'Write-BuildInfo' {
     }
 
     It 'resolves build info when BuildInfo is not provided' {
-        InModuleScope AtlassianPS.Standards {
+        InModuleScope AtlassianPSVII.Standards {
             Mock -CommandName Get-Command -MockWith { $null } -ParameterFilter { $Name -eq 'Write-Build' }
             Mock -CommandName Get-BuildEnvironmentInfo -MockWith {
                 [PSCustomObject]@{
                     BuildSystem       = 'Local'
-                    ProjectName       = 'AtlassianPS.Standards'
+                    ProjectName       = 'AtlassianPSVII.Standards'
                     ProjectPath       = '/tmp/project'
-                    ModulePath        = '/tmp/project/AtlassianPS.Standards'
-                    ModuleManifest    = '/tmp/project/AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+                    ModulePath        = '/tmp/project/AtlassianPSVII.Standards'
+                    ModuleManifest    = '/tmp/project/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
                     BuildOutputPath   = '/tmp/project/Release'
-                    BuiltManifestPath = '/tmp/project/Release/AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+                    BuiltManifestPath = '/tmp/project/Release/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
                     BranchName        = 'main'
                     CommitHash        = 'abc123'
                     CommitMessage     = 'test'

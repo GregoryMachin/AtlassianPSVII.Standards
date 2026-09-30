@@ -272,22 +272,22 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
         $workflow | Should -Match 'Invoke-Build -Task SetSourceVersion'
         $workflow | Should -Match 'uses: \./\.github/actions/commit-release-metadata'
         $workflow | Should -Match 'uses: \./\.github/actions/create-release-tag'
-        $workflow | Should -Not -Match 'Set-AtlassianPSModuleManifestVersion'
-        $workflow | Should -Not -Match 'Get-AtlassianPSReleaseNotesFromChangelog'
+        $workflow | Should -Not -Match 'Set-AtlassianPSVIIModuleManifestVersion'
+        $workflow | Should -Not -Match 'Get-AtlassianPSVIIReleaseNotesFromChangelog'
         $workflow | Should -Not -Match 'Compress-Archive'
 
         # Publication consumes the commit-specific CI package without stamping or repackaging.
         $workflow | Should -Match 'Verified-Release-\$\{\{ github\.event\.workflow_run\.head_sha \}\}'
-        $workflow | Should -Match 'Test-AtlassianPSReleaseProvenance'
+        $workflow | Should -Match 'Test-AtlassianPSVIIReleaseProvenance'
         $workflow | Should -Match 'gh attestation verify'
         $workflow | Should -Match "--source-digest '\$\{\{ github\.event\.workflow_run\.head_sha \}\}'"
         $workflow | Should -Match "--source-ref 'refs/heads/master'"
         $workflow | Should -Match '--deny-self-hosted-runners'
         $workflow | Should -Not -Match 'Invoke-Build -Task SetVersion'
         $workflow | Should -Not -Match 'Invoke-Build -Task Package'
-        $workflow | Should -Match 'Publish-Module -Path \./Publish/AtlassianPS\.Standards'
+        $workflow | Should -Match 'Publish-Module -Path \./Publish/AtlassianPSVII\.Standards'
 
-        $provenanceIndex = $workflow.IndexOf('Test-AtlassianPSReleaseProvenance')
+        $provenanceIndex = $workflow.IndexOf('Test-AtlassianPSVIIReleaseProvenance')
         $attestationIndex = $workflow.IndexOf('gh attestation verify')
         $publishIndex = $workflow.IndexOf('Publish-Module')
         $provenanceIndex | Should -BeGreaterThan -1
@@ -296,7 +296,7 @@ Describe 'GitHub Actions' -Tag 'Lint', 'Unit' {
     }
 
     It 'keeps publishing secrets out of the build script and creates provenance through build tasks' {
-        $buildScriptPath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPS.Standards.build.ps1'
+        $buildScriptPath = Join-Path -Path $projectRoot -ChildPath 'AtlassianPSVII.Standards.build.ps1'
         $buildScript = Get-Content -LiteralPath $buildScriptPath -Raw
 
         $buildScript | Should -Not -Match '(?m)^Task Publish\b'

@@ -3,7 +3,7 @@
 Describe 'Release artifact downstream contract' {
     It 'loads the built module and runs the exported prefixed lint command in a fresh process' {
         $projectRoot = (Resolve-Path -LiteralPath (Join-Path -Path $PSScriptRoot -ChildPath '..')).ProviderPath
-        $manifestPath = Join-Path -Path $projectRoot -ChildPath 'Release/AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+        $manifestPath = Join-Path -Path $projectRoot -ChildPath 'Release/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
         if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
             throw "Built module manifest was not found at '$manifestPath'. Run Invoke-Build -Task Build before running this test."
         }
@@ -28,7 +28,7 @@ try {
     Set-Content -LiteralPath $buildScriptPath -Value '$null = $true'
 
     Import-Module -Name $ManifestPath -Force -ErrorAction Stop
-    $result = Invoke-AtlassianPSLint `
+    $result = Invoke-AtlassianPSVIILint `
         -ProjectPath $projectPath `
         -ModulePath $modulePath `
         -BuildScriptPath $buildScriptPath `

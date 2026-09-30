@@ -21,9 +21,9 @@
         String. The resolved module manifest path.
 
     .EXAMPLE
-        Resolve-AtlassianPSModuleSource -ModuleName 'JiraPS' -StartPath $PSScriptRoot
+        Resolve-AtlassianPSVIIModuleSource -ModuleName 'JiraPSVII' -StartPath $PSScriptRoot
 
-        Resolves JiraPS/JiraPS.psd1 from source tests, or Release/JiraPS/JiraPS.psd1 from release-artifact tests.
+        Resolves JiraPSVII/JiraPSVII.psd1 from source tests, or Release/JiraPSVII/JiraPSVII.psd1 from release-artifact tests.
     #>
     [CmdletBinding()]
     [OutputType([String])]

@@ -4,16 +4,16 @@
         Atomically updates the Standards dependency and setup-action pins.
 
     .DESCRIPTION
-        Resolves an AtlassianPS.Standards release from PSGallery and its trusted
+        Resolves an AtlassianPSVII.Standards release from PSGallery and its trusted
         GitHub vX.Y.Z tag, then updates Tools/build.requirements.psd1 and every
         matching setup-powershell action reference as one rollback-capable
         transaction.
 
     .PARAMETER RepositoryRoot
-        Root of the downstream AtlassianPS repository to update.
+        Root of the downstream AtlassianPSVII repository to update.
 
     .PARAMETER Version
-        Stable AtlassianPS.Standards release version. When omitted, the latest
+        Stable AtlassianPSVII.Standards release version. When omitted, the latest
         PSGallery version is used.
 
     .PARAMETER SetupActionCommitSha
@@ -33,10 +33,10 @@
         PSCustomObject describing the resolved pins and transaction result.
 
     .EXAMPLE
-        Update-StandardsDependencyPin -RepositoryRoot ../JiraPS -Version 0.1.12
+        Update-StandardsDependencyPin -RepositoryRoot ../JiraPSVII -Version 0.1.12
 
     .EXAMPLE
-        Update-StandardsDependencyPin -RepositoryRoot ../JiraPS -Version 0.1.12 -WhatIf
+        Update-StandardsDependencyPin -RepositoryRoot ../JiraPSVII -Version 0.1.12 -WhatIf
     #>
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     [OutputType([PSCustomObject])]
@@ -62,7 +62,7 @@
         [String[]]$WorkflowPath
     )
 
-    $moduleName = 'AtlassianPS.Standards'
+    $moduleName = 'AtlassianPSVII.Standards'
     $actionCoordinate = 'AtlassianPS/AtlassianPS.Standards/.github/actions/setup-powershell'
 
     function Resolve-PathBelowRoot {
@@ -101,7 +101,7 @@
     }
 
     if ($Version -and $Version -notmatch '^\d+\.\d+\.\d+$') {
-        throw "Invalid AtlassianPS.Standards version '$Version'. Expected X.Y.Z."
+        throw "Invalid AtlassianPSVII.Standards version '$Version'. Expected X.Y.Z."
     }
 
     $release = Resolve-StandardsReleasePin -RequestedVersion $Version
@@ -158,7 +158,7 @@
     $releaseVersion = $release.Version
     $requirementsState = Get-TextFileState -Path $resolvedRequirementsPath
     $requirementBlockPattern = [Text.RegularExpressions.Regex]::new(
-        '(?ms)@\{(?:(?!\}).)*ModuleName\s*=\s*[''"]AtlassianPS\.Standards[''"](?:(?!\}).)*\}'
+        '(?ms)@\{(?:(?!\}).)*ModuleName\s*=\s*[''"]AtlassianPSVII\.Standards[''"](?:(?!\}).)*\}'
     )
     $requirementMatches = $requirementBlockPattern.Matches($requirementsState.Text)
     if ($requirementMatches.Count -ne 1) {

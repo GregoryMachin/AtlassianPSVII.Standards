@@ -39,7 +39,7 @@ runs:
         fi
 
         if [ -z "${RELEASE_BOT_TOKEN:-}" ]; then
-          echo "::notice::ATLASSIANPS_RELEASE_BOT_TOKEN is not configured. Falling back to GITHUB_TOKEN."
+          echo "::notice::ATLASSIANPSVII_RELEASE_BOT_TOKEN is not configured. Falling back to GITHUB_TOKEN."
         fi
 
         if git diff --quiet -- CHANGELOG.md .changelog "${MANIFEST_PATH}"; then
@@ -54,7 +54,7 @@ runs:
 
         if ! git push "https://x-access-token:${push_token}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:${TARGET_BRANCH}"; then
           if [ -z "${RELEASE_BOT_TOKEN:-}" ]; then
-            echo "::error::Push with GITHUB_TOKEN failed. Configure ATLASSIANPS_RELEASE_BOT_TOKEN when branch protection prevents direct pushes."
+            echo "::error::Push with GITHUB_TOKEN failed. Configure ATLASSIANPSVII_RELEASE_BOT_TOKEN when branch protection prevents direct pushes."
           fi
           exit 1
         fi

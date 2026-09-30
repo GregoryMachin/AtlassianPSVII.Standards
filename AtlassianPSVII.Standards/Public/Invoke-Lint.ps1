@@ -109,7 +109,7 @@
     if (-not $AnalyzerSettingsPath) {
         $moduleBase = $ExecutionContext.SessionState.Module.ModuleBase
         if (-not $moduleBase) {
-            throw 'Unable to resolve AtlassianPS.Standards module base path.'
+            throw 'Unable to resolve AtlassianPSVII.Standards module base path.'
         }
 
         $AnalyzerSettingsPath = Join-Path -Path $moduleBase -ChildPath 'PSScriptAnalyzerSettings.psd1'

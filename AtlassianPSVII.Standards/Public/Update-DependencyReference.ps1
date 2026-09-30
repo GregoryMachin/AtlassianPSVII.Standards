@@ -27,7 +27,7 @@ Use this only for explicitly non-blocking/manual update runs.
 PSCustomObject
 
 .EXAMPLE
-Update-DependencyReference -BuildRequirementsPath './Tools/build.requirements.psd1' -ManifestPath './AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+Update-DependencyReference -BuildRequirementsPath './Tools/build.requirements.psd1' -ManifestPath './AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
 
 .EXAMPLE
 Update-DependencyReference -AllowLookupFailure
@@ -42,7 +42,7 @@ function Update-DependencyReference {
 
         [Parameter()]
         [ValidateNotNullOrEmpty()]
-        [String]$ManifestPath = (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'AtlassianPS.Standards.psd1'),
+        [String]$ManifestPath = (Join-Path -Path (Split-Path -Path $PSScriptRoot -Parent) -ChildPath 'AtlassianPSVII.Standards.psd1'),
 
         [Parameter()]
         [Switch]$SkipBuildRequirement,

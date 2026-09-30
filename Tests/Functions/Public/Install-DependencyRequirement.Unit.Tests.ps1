@@ -7,12 +7,12 @@ BeforeAll {
 
 Describe 'Install-DependencyRequirement' {
     It 'is exported by the module' {
-        $command = Get-Command -Name 'Install-AtlassianPSDependencyRequirement' -ErrorAction SilentlyContinue
+        $command = Get-Command -Name 'Install-AtlassianPSVIIDependencyRequirement' -ErrorAction SilentlyContinue
         $command | Should -Not -BeNullOrEmpty
     }
 
     It 'provides comment-based help' {
-        $help = Get-Help -Name 'Install-AtlassianPSDependencyRequirement' -ErrorAction Stop
+        $help = Get-Help -Name 'Install-AtlassianPSVIIDependencyRequirement' -ErrorAction Stop
         $help.Synopsis | Should -Not -BeNullOrEmpty
         $help.Description.Text | Should -Not -BeNullOrEmpty
     }
@@ -36,7 +36,7 @@ Describe 'Install-DependencyRequirement' {
 }
 '@
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
             ManifestPath          = $manifestPath
         } {
@@ -82,7 +82,7 @@ Describe 'Install-DependencyRequirement' {
 }
 '@
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
             ManifestPath          = $manifestPath
         } {
@@ -113,7 +113,7 @@ Describe 'Install-DependencyRequirement' {
 }
 '@
 
-        InModuleScope AtlassianPS.Standards -Parameters @{
+        InModuleScope AtlassianPSVII.Standards -Parameters @{
             BuildRequirementsPath = $buildRequirementsPath
             ManifestPath          = $manifestPath
         } {

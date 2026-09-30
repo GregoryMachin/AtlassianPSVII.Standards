@@ -79,9 +79,9 @@ jobs:
         if: steps.plan.outputs.should_release == 'true'
         with:
           release-tag: ${{ steps.plan.outputs.release_tag }}
-          manifest-path: AtlassianPS.Standards/AtlassianPS.Standards.psd1
+          manifest-path: AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1
           github-token: ${{ github.token }}
-          release-bot-token: ${{ secrets.ATLASSIANPS_RELEASE_BOT_TOKEN }}
+          release-bot-token: ${{ secrets.ATLASSIANPSVII_RELEASE_BOT_TOKEN }}
 
   publish:
     name: Publish tested release artifact
@@ -127,20 +127,20 @@ jobs:
       - name: Verify checksums and provenance identity
         shell: pwsh
         run: |
-          Test-AtlassianPSReleaseProvenance `
+          Test-AtlassianPSVIIReleaseProvenance `
             -ReleasePath ./VerifiedRelease `
             -ExpectedRepository '${{ github.repository }}' `
             -ExpectedCommitSha '${{ github.event.workflow_run.head_sha }}' `
             -ExpectedRunId '${{ github.event.workflow_run.id }}' `
             -ExpectedReleaseTag '${{ steps.prepared_release.outputs.release_tag }}' `
-            -AttestationPath ./VerifiedRelease/AtlassianPS.Standards.intoto.jsonl `
+            -AttestationPath ./VerifiedRelease/AtlassianPSVII.Standards.intoto.jsonl `
             -RequireAttestation
 
       - name: Verify GitHub artifact attestation
         shell: bash
         run: |
-          gh attestation verify ./VerifiedRelease/AtlassianPS.Standards.zip \
-            --bundle ./VerifiedRelease/AtlassianPS.Standards.intoto.jsonl \
+          gh attestation verify ./VerifiedRelease/AtlassianPSVII.Standards.zip \
+            --bundle ./VerifiedRelease/AtlassianPSVII.Standards.intoto.jsonl \
             --repo '${{ github.repository }}' \
             --signer-workflow '${{ github.repository }}/.github/workflows/ci.yml' \
             --source-digest '${{ github.event.workflow_run.head_sha }}' \
@@ -151,7 +151,7 @@ jobs:
 
       - name: Extract attested package
         shell: pwsh
-        run: Expand-Archive -LiteralPath ./VerifiedRelease/AtlassianPS.Standards.zip -DestinationPath ./Publish
+        run: Expand-Archive -LiteralPath ./VerifiedRelease/AtlassianPSVII.Standards.zip -DestinationPath ./Publish
 
       - uses: ./.github/actions/create-release-tag
         with:
@@ -166,10 +166,10 @@ jobs:
         id: release_notes
         with:
           release-version: ${{ steps.release_ref.outputs.release_tag }}
-          module-path: ./AtlassianPS.Standards/AtlassianPS.Standards.psd1
+          module-path: ./AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1
 
       - name: Publish tested module artifact
-        run: Publish-Module -Path ./Publish/AtlassianPS.Standards -NuGetApiKey ${{ secrets.PSGALLERY_API_KEY }} -ErrorAction Stop
+        run: Publish-Module -Path ./Publish/AtlassianPSVII.Standards -NuGetApiKey ${{ secrets.PSGALLERY_API_KEY }} -ErrorAction Stop
         shell: pwsh
 
       - name: Create GitHub release and upload asset
@@ -179,11 +179,11 @@ jobs:
           name: ${{ steps.release_ref.outputs.release_tag }}
           body_path: ${{ steps.release_notes.outputs.release_notes_path }}
           files: |
-            ./VerifiedRelease/AtlassianPS.Standards.zip
+            ./VerifiedRelease/AtlassianPSVII.Standards.zip
             ./VerifiedRelease/SHA256SUMS
             ./VerifiedRelease/dependency-manifest.json
             ./VerifiedRelease/release-provenance.json
-            ./VerifiedRelease/AtlassianPS.Standards.intoto.jsonl
+            ./VerifiedRelease/AtlassianPSVII.Standards.intoto.jsonl
           fail_on_unmatched_files: true
           draft: false
           prerelease: ${{ contains(steps.release_ref.outputs.release_tag, '-alpha') || contains(steps.release_ref.outputs.release_tag, '-beta') || contains(steps.release_ref.outputs.release_tag, '-rc') }}
@@ -197,4 +197,4 @@ jobs:
           token: ${{ secrets.HOMEPAGE_PAT }}
           repository: AtlassianPS/AtlassianPS.github.io
           event-type: module-release
-          client-payload: '{"module": "AtlassianPS.Standards", "version": "${{ steps.release_ref.outputs.release_tag }}"}'
+          client-payload: '{"module": "AtlassianPSVII.Standards", "version": "${{ steps.release_ref.outputs.release_tag }}"}'

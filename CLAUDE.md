@@ -9,7 +9,7 @@ If any rule conflicts, `AGENTS.md` wins.
 
 ## Required Checklist
 
-1. Preserve shared-helper compatibility for downstream AtlassianPS repos.
+1. Preserve shared-helper compatibility for downstream AtlassianPSVII repos.
 2. Respect versioning/dependency guardrails in `AGENTS.md`.
 3. During iteration, run focused tests when possible (for example `Invoke-Pester -Path 'Tests/Functions/Public/Invoke-Lint.Unit.Tests.ps1'`).
 4. Before finalizing, run from repo root:

@@ -1,4 +1,4 @@
-# AtlassianPS.Standards PowerShell Rules
+# AtlassianPSVII.Standards PowerShell Rules
 
 Practical implementation/build/test guidance shared across AI entry points.
 
@@ -23,12 +23,12 @@ Instruction-only changes may be skipped by CI path filters; run local validation
 
 - Keep module behavior compatible with both Windows PowerShell 5.1 and PowerShell 7.x.
 - Avoid shell-specific assumptions that break in PS 5.1.
-- Preserve exported helper contracts consumed by downstream AtlassianPS repositories.
+- Preserve exported helper contracts consumed by downstream AtlassianPSVII repositories.
 
 ## Versioning and Dependency Guardrails
 
 - Keep dependencies pinned (no floating ranges).
-- Keep `RequiredModules` in `AtlassianPS.Standards/AtlassianPS.Standards.psd1` synchronized with `Tools/build.requirements.psd1`.
+- Keep `RequiredModules` in `AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1` synchronized with `Tools/build.requirements.psd1`.
 - Treat breaking helper behavior as a major-version concern.
 - Use `vX.Y.Z` tags for release publishing.
 
@@ -45,9 +45,9 @@ Instruction-only changes may be skipped by CI path filters; run local validation
 
 ## Source Layout
 
-- Public helpers: `AtlassianPS.Standards/Public/*.ps1`
-- Private helpers: `AtlassianPS.Standards/Private/*.ps1`
-- Build script: `AtlassianPS.Standards.build.ps1`
+- Public helpers: `AtlassianPSVII.Standards/Public/*.ps1`
+- Private helpers: `AtlassianPSVII.Standards/Private/*.ps1`
+- Build script: `AtlassianPSVII.Standards.build.ps1`
 - Tests: `Tests/**/*.ps1`
 - Dependency bootstrap: `Tools/setup.ps1`, `Tools/build.requirements.psd1`
 

@@ -9,12 +9,12 @@ param(
     [String]$WorkspaceRoot = (Split-Path -Path $PSScriptRoot -Parent | Split-Path -Parent),
 
     [Parameter()]
-    [ValidateSet('AtlassianPS.Configuration', 'JiraPS', 'JiraAgilePS', 'ConfluencePS')]
+    [ValidateSet('AtlassianPSVII.Configuration', 'JiraPSVII', 'JiraAgilePSVII', 'ConfluencePSVII')]
     [String[]]$RepositoryName = @(
-        'AtlassianPS.Configuration',
-        'JiraPS',
-        'JiraAgilePS',
-        'ConfluencePS'
+        'AtlassianPSVII.Configuration',
+        'JiraPSVII',
+        'JiraAgilePSVII',
+        'ConfluencePSVII'
     ),
 
     [Parameter()]
@@ -51,8 +51,8 @@ function Resolve-StandardsCandidateModule {
         $candidateManifestPaths += $resolvedPath
     }
     else {
-        $candidateManifestPaths += Join-Path -Path $resolvedPath -ChildPath 'AtlassianPS.Standards.psd1'
-        $candidateManifestPaths += Join-Path -Path $resolvedPath -ChildPath 'AtlassianPS.Standards/AtlassianPS.Standards.psd1'
+        $candidateManifestPaths += Join-Path -Path $resolvedPath -ChildPath 'AtlassianPSVII.Standards.psd1'
+        $candidateManifestPaths += Join-Path -Path $resolvedPath -ChildPath 'AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1'
     }
 
     $manifestPath = @(
@@ -62,7 +62,7 @@ function Resolve-StandardsCandidateModule {
     )
 
     if ($manifestPath.Count -ne 1) {
-        throw "Candidate Standards path '$resolvedPath' does not contain AtlassianPS.Standards.psd1."
+        throw "Candidate Standards path '$resolvedPath' does not contain AtlassianPSVII.Standards.psd1."
     }
 
     $manifestPath = (Resolve-Path -LiteralPath $manifestPath[0]).ProviderPath
@@ -98,7 +98,7 @@ function Get-AllowedDownstreamRepository {
         [String]$WorkspaceRoot,
 
         [Parameter(Mandatory)]
-        [ValidateSet('AtlassianPS.Configuration', 'JiraPS', 'JiraAgilePS', 'ConfluencePS')]
+        [ValidateSet('AtlassianPSVII.Configuration', 'JiraPSVII', 'JiraAgilePSVII', 'ConfluencePSVII')]
         [String]$Name
     )
 
@@ -159,16 +159,16 @@ function Get-DownstreamStandardsVersion {
     $requirements = @(Import-PowerShellDataFile -LiteralPath $RequirementsPath)
     $standardsRequirements = @(
         $requirements |
-            Where-Object { $_.ModuleName -eq 'AtlassianPS.Standards' }
+            Where-Object { $_.ModuleName -eq 'AtlassianPSVII.Standards' }
     )
 
     if ($standardsRequirements.Count -ne 1) {
-        throw "Build requirements '$RequirementsPath' must contain exactly one AtlassianPS.Standards dependency."
+        throw "Build requirements '$RequirementsPath' must contain exactly one AtlassianPSVII.Standards dependency."
     }
 
     $requiredVersion = $standardsRequirements[0].RequiredVersion
     if (-not $requiredVersion) {
-        throw "AtlassianPS.Standards in '$RequirementsPath' must use RequiredVersion."
+        throw "AtlassianPSVII.Standards in '$RequirementsPath' must use RequiredVersion."
     }
 
     return [Version]$requiredVersion
@@ -195,7 +195,7 @@ function Initialize-StandardsCandidateOverlay {
         [String]$OverlayModuleRoot
     )
 
-    $versionPath = Join-Path -Path $OverlayModuleRoot -ChildPath "AtlassianPS.Standards/$RequiredVersion"
+    $versionPath = Join-Path -Path $OverlayModuleRoot -ChildPath "AtlassianPSVII.Standards/$RequiredVersion"
     if (Test-Path -LiteralPath $versionPath -PathType Container) {
         return $OverlayModuleRoot
     }
@@ -205,9 +205,9 @@ function Initialize-StandardsCandidateOverlay {
         Copy-Item -LiteralPath $candidateItem.FullName -Destination $versionPath -Recurse -Force
     }
 
-    $overlayManifestPath = Join-Path -Path $versionPath -ChildPath 'AtlassianPS.Standards.psd1'
+    $overlayManifestPath = Join-Path -Path $versionPath -ChildPath 'AtlassianPSVII.Standards.psd1'
     if (-not (Test-Path -LiteralPath $overlayManifestPath -PathType Leaf)) {
-        throw "Candidate overlay '$versionPath' does not contain AtlassianPS.Standards.psd1."
+        throw "Candidate overlay '$versionPath' does not contain AtlassianPSVII.Standards.psd1."
     }
 
     $manifestContent = [IO.File]::ReadAllText($overlayManifestPath)
@@ -420,12 +420,12 @@ function Invoke-DownstreamCompatibility {
         [String]$WorkspaceRoot,
 
         [Parameter()]
-        [ValidateSet('AtlassianPS.Configuration', 'JiraPS', 'JiraAgilePS', 'ConfluencePS')]
+        [ValidateSet('AtlassianPSVII.Configuration', 'JiraPSVII', 'JiraAgilePSVII', 'ConfluencePSVII')]
         [String[]]$RepositoryName = @(
-            'AtlassianPS.Configuration',
-            'JiraPS',
-            'JiraAgilePS',
-            'ConfluencePS'
+            'AtlassianPSVII.Configuration',
+            'JiraPSVII',
+            'JiraAgilePSVII',
+            'ConfluencePSVII'
         ),
 
         [Parameter()]
@@ -453,7 +453,7 @@ function Invoke-DownstreamCompatibility {
     $resolvedPowerShellPath = (Resolve-Path -LiteralPath $resolvedPowerShellPath).ProviderPath
 
     $overlayRoot = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath (
-        'AtlassianPS-Standards-Compatibility-{0}' -f [Guid]::NewGuid().ToString('N')
+        'AtlassianPSVII-Standards-Compatibility-{0}' -f [Guid]::NewGuid().ToString('N')
     )
     $overlayModuleRoot = Join-Path -Path $overlayRoot -ChildPath 'Modules'
     $results = New-Object System.Collections.Generic.List[PSCustomObject]
@@ -516,7 +516,7 @@ function Invoke-DownstreamCompatibility {
 
             if (
                 $resolvedOverlayRoot.StartsWith($temporaryRoot, [StringComparison]::OrdinalIgnoreCase) -and
-                ((Split-Path -Path $resolvedOverlayRoot -Leaf) -like 'AtlassianPS-Standards-Compatibility-*')
+                ((Split-Path -Path $resolvedOverlayRoot -Leaf) -like 'AtlassianPSVII-Standards-Compatibility-*')
             ) {
                 Remove-Item -LiteralPath $resolvedOverlayRoot -Recurse -Force
             }

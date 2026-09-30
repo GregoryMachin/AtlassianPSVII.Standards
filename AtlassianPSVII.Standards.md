@@ -1,15 +1,15 @@
-# AtlassianPS.Standards current state
+# AtlassianPSVII.Standards current state
 
 Reviewed: 2026-07-27
 
 ## Purpose
 
-`AtlassianPS.Standards` is the shared build, lint, test, packaging, dependency, and release-automation module for AtlassianPS repositories.
+`AtlassianPSVII.Standards` is the shared build, lint, test, packaging, dependency, and release-automation module for AtlassianPSVII repositories.
 It is infrastructure for the PowerShell projects rather than an Atlassian product API client.
 
 ## How it works
 
-- The manifest is version `0.1.12`, supports PowerShell 5.1, and applies the `AtlassianPS` default prefix.
+- The manifest is version `0.1.12`, supports PowerShell 5.1, and applies the `AtlassianPSVII` default prefix.
 - Twenty public source files expose primitives for resolving projects, joining module source, generating help, testing packages, installing dependencies, running tests/lint, and preparing releases.
 - Eleven private helpers implement shared internals.
 - Downstream repositories keep their task orchestration locally but call these stable primitives.
@@ -37,7 +37,7 @@ Snapshot: branch `master`, last local commit `b95fd4d` dated 2026-06-18, matchin
 
 ## Gaps and risks
 
-1. Downstream adoption is uneven: Configuration, ConfluencePS, and JiraAgilePS are pinned to older Standards releases.
+1. Downstream adoption is uneven: Configuration, ConfluencePSVII, and JiraAgilePSVII are pinned to older Standards releases.
 2. `FunctionsToExport = '*'` weakens the stated stable-contract boundary.
 3. Shared action consumers pin commit SHAs, but synchronized-update tooling and drift reporting remain essential.
 4. There is no workspace-level compatibility test that exercises all downstream repositories against a candidate Standards release.
@@ -49,7 +49,7 @@ Snapshot: branch `master`, last local commit `b95fd4d` dated 2026-06-18, matchin
 ### Now
 
 1. Generate explicit manifest exports and fail CI on unplanned public-surface changes.
-2. Add a downstream compatibility matrix that checks candidate Standards builds against Configuration, ConfluencePS, JiraAgilePS, and JiraPS.
+2. Add a downstream compatibility matrix that checks candidate Standards builds against Configuration, ConfluencePSVII, JiraAgilePSVII, and JiraPSVII.
 3. Provide one supported command/action to update both `Tools/build.requirements.psd1` and workflow SHA pins.
 4. Add contract tests for failed Gallery publication, existing tags, missing artifacts, and changelog preparation races.
 

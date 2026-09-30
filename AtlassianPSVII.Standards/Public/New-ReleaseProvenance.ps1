@@ -82,7 +82,7 @@
 
     $dependencyDocument = [Ordered]@{
         SchemaVersion = '1.0'
-        Format        = 'AtlassianPS.DependencyManifest'
+        Format        = 'AtlassianPSVII.DependencyManifest'
         Module        = $moduleName
         Components    = @($dependencies | Sort-Object Scope, Name)
     }
@@ -102,7 +102,7 @@
         $packageFile = Get-Item -LiteralPath $resolvedPackagePath
         $provenanceDocument = [Ordered]@{
             SchemaVersion      = '1.0'
-            Format             = 'AtlassianPS.ReleaseProvenance'
+            Format             = 'AtlassianPSVII.ReleaseProvenance'
             Artifact           = [Ordered]@{
                 Name   = $packageFile.Name
                 Size   = $packageFile.Length

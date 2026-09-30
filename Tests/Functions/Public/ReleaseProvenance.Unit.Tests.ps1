@@ -42,10 +42,10 @@ BeforeAll {
 )
 '@ | Set-Content -LiteralPath $requirementsPath
 
-        $packagePath = New-AtlassianPSModulePackage `
+        $packagePath = New-AtlassianPSVIIModulePackage `
             -BuildOutputPath $releasePath `
             -ModuleName 'Example'
-        $result = New-AtlassianPSReleaseProvenance `
+        $result = New-AtlassianPSVIIReleaseProvenance `
             -PackagePath $packagePath `
             -ModuleManifestPath $manifestPath `
             -BuildRequirementsPath $requirementsPath `
@@ -72,7 +72,7 @@ Describe 'Release provenance' {
         $firstDependencies = Get-Content -LiteralPath $fixture.Result.DependencyManifestPath -Raw
         $firstChecksums = Get-Content -LiteralPath $fixture.Result.ChecksumPath -Raw
 
-        $null = New-AtlassianPSReleaseProvenance `
+        $null = New-AtlassianPSVIIReleaseProvenance `
             -PackagePath $fixture.PackagePath `
             -ModuleManifestPath $fixture.ManifestPath `
             -BuildRequirementsPath $fixture.RequirementsPath `
@@ -103,7 +103,7 @@ Describe 'Release provenance' {
         $attestationPath = Join-Path -Path $fixture.ReleasePath -ChildPath 'attestation.json'
         Set-Content -LiteralPath $attestationPath -Value '{}'
 
-        $result = Test-AtlassianPSReleaseProvenance `
+        $result = Test-AtlassianPSVIIReleaseProvenance `
             -ReleasePath $fixture.ReleasePath `
             -ExpectedRepository 'AtlassianPS/Example' `
             -ExpectedCommitSha ('a' * 40) `
@@ -121,7 +121,7 @@ Describe 'Release provenance' {
         Add-Content -LiteralPath $fixture.PackagePath -Value 'tampered'
 
         {
-            Test-AtlassianPSReleaseProvenance `
+            Test-AtlassianPSVIIReleaseProvenance `
                 -ReleasePath $fixture.ReleasePath `
                 -ExpectedRepository 'AtlassianPS/Example' `
                 -ExpectedCommitSha ('a' * 40) `
@@ -134,7 +134,7 @@ Describe 'Release provenance' {
         $fixture = Initialize-ProvenanceFixture -Root (Join-Path -Path $TestDrive -ChildPath 'missing-attestation')
 
         {
-            Test-AtlassianPSReleaseProvenance `
+            Test-AtlassianPSVIIReleaseProvenance `
                 -ReleasePath $fixture.ReleasePath `
                 -ExpectedRepository 'AtlassianPS/Example' `
                 -ExpectedCommitSha ('a' * 40) `
@@ -148,7 +148,7 @@ Describe 'Release provenance' {
         $fixture = Initialize-ProvenanceFixture -Root (Join-Path -Path $TestDrive -ChildPath 'wrong-commit')
 
         {
-            Test-AtlassianPSReleaseProvenance `
+            Test-AtlassianPSVIIReleaseProvenance `
                 -ReleasePath $fixture.ReleasePath `
                 -ExpectedRepository 'AtlassianPS/Example' `
                 -ExpectedCommitSha ('b' * 40) `
@@ -162,7 +162,7 @@ Describe 'Release provenance' {
             -Root (Join-Path -Path $TestDrive -ChildPath 'prerelease') `
             -Prerelease 'rc-2'
 
-        $result = Test-AtlassianPSReleaseProvenance `
+        $result = Test-AtlassianPSVIIReleaseProvenance `
             -ReleasePath $fixture.ReleasePath `
             -ExpectedRepository 'AtlassianPS/Example' `
             -ExpectedCommitSha ('a' * 40) `
@@ -171,7 +171,7 @@ Describe 'Release provenance' {
         $result.ReleaseTag | Should -Be 'v2.3.4-rc-2'
 
         {
-            Test-AtlassianPSReleaseProvenance `
+            Test-AtlassianPSVIIReleaseProvenance `
                 -ReleasePath $fixture.ReleasePath `
                 -ExpectedRepository 'AtlassianPS/Example' `
                 -ExpectedCommitSha ('a' * 40) `

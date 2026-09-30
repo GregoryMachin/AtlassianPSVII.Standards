@@ -4,19 +4,19 @@ $script:_TestToolsDir = $PSScriptRoot
 function Initialize-TestEnvironment {
     <#
     .SYNOPSIS
-        Ensures the AtlassianPS.Standards module is loaded at the current on-disk version and
+        Ensures the AtlassianPSVII.Standards module is loaded at the current on-disk version and
         returns the manifest path used.
 
     .DESCRIPTION
         Idempotent helper for test BeforeDiscovery blocks. On the first call it
-        removes any previously loaded AtlassianPS.Standards (and dependents), imports the
+        removes any previously loaded AtlassianPSVII.Standards (and dependents), imports the
         module from the resolved manifest path, and stamps the freshly loaded
         module's session state with a fingerprint of the source tree.
 
         On subsequent calls it recomputes the fingerprint and short-circuits
         when the loaded module already matches - no Remove-Module / Import-Module
         churn. When the on-disk module changes (a developer edits a function,
-        or `CompileModule` rewrites Release/AtlassianPS.Standards/AtlassianPS.Standards.psm1), the fingerprint
+        or `CompileModule` rewrites Release/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psm1), the fingerprint
         differs and the module is reimported.
 
         The cache lives inside the loaded module's own session state, so its
@@ -24,7 +24,7 @@ function Initialize-TestEnvironment {
         a stale-cache / fresh-module mismatch is impossible by construction.
 
     .OUTPUTS
-        [string] The absolute path to the AtlassianPS.Standards manifest that was loaded.
+        [string] The absolute path to the AtlassianPSVII.Standards manifest that was loaded.
 
     .EXAMPLE
         BeforeDiscovery {
@@ -54,8 +54,8 @@ function Initialize-TestEnvironment {
 
     # Cheapest robust freshness signal: max LastWriteTimeUtc across all module
     # files under the module directory (~8 ms warm, ~40 ms cold). Detects
-    # source edits in AtlassianPS.Standards/{Public,Private}/*.ps1, AtlassianPS.Standards/Types/*.cs, as well as CompileModule
-    # rewriting Release/AtlassianPS.Standards/AtlassianPS.Standards.psm1 between Build runs.
+    # source edits in AtlassianPSVII.Standards/{Public,Private}/*.ps1, AtlassianPSVII.Standards/Types/*.cs, as well as CompileModule
+    # rewriting Release/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psm1 between Build runs.
     $fingerprint = (
         Get-ChildItem $moduleDir -Recurse -File -ErrorAction SilentlyContinue |
             Where-Object { $_.Extension -in '.ps1', '.psm1', '.psd1', '.cs' } |
@@ -67,7 +67,7 @@ function Initialize-TestEnvironment {
     # stable identity for "same module loaded" is .ModuleBase, the directory
     # containing the manifest.
     $loaded = @(
-        Get-Module AtlassianPS.Standards |
+        Get-Module AtlassianPSVII.Standards |
             Where-Object { $_.ModuleBase -eq $moduleDir } |
             Sort-Object -Property Version -Descending |
             Select-Object -First 1
@@ -80,22 +80,22 @@ function Initialize-TestEnvironment {
     }
 
     Get-Module |
-        Where-Object { $_.RequiredModules.Name -eq 'AtlassianPS.Standards' } |
+        Where-Object { $_.RequiredModules.Name -eq 'AtlassianPSVII.Standards' } |
         Remove-Module -Force -ErrorAction SilentlyContinue
 
-    Remove-Module AtlassianPS.Standards -Force -ErrorAction SilentlyContinue
+    Remove-Module AtlassianPSVII.Standards -Force -ErrorAction SilentlyContinue
 
     Import-Module $manifestPath -Force -Global -ErrorAction Stop
 
     $loadedModule = @(
-        Get-Module AtlassianPS.Standards |
+        Get-Module AtlassianPSVII.Standards |
             Where-Object { $_.ModuleBase -eq $moduleDir } |
             Sort-Object -Property Version -Descending |
             Select-Object -First 1
     )
 
     if ($loadedModule.Count -eq 0) {
-        throw "Failed to load AtlassianPS.Standards from '$moduleDir'."
+        throw "Failed to load AtlassianPSVII.Standards from '$moduleDir'."
     }
 
     & $loadedModule[0] { param($fp) $script:__TestImportFingerprint = $fp } $fingerprint
@@ -106,21 +106,21 @@ function Initialize-TestEnvironment {
 function Resolve-ModuleSource {
     <#
     .SYNOPSIS
-        Resolves the path to the AtlassianPS.Standards module manifest for testing.
+        Resolves the path to the AtlassianPSVII.Standards module manifest for testing.
 
     .DESCRIPTION
         This lightweight helper function replaces the BuildHelpers dependency for
         Pester v5 tests. It determines whether tests are running against the source
-        module in the AtlassianPS.Standards/ directory or a built Release module and returns the
+        module in the AtlassianPSVII.Standards/ directory or a built Release module and returns the
         appropriate manifest path.
 
         The function checks:
         1. If running from a Release build context
-        2. The source module location (AtlassianPS.Standards/AtlassianPS.Standards.psd1)
+        2. The source module location (AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1)
         3. Validates the module file exists
 
     .OUTPUTS
-        [string] Path to the AtlassianPS.Standards module manifest (.psd1)
+        [string] Path to the AtlassianPSVII.Standards module manifest (.psd1)
 
     .EXAMPLE
         # Standard usage in test files
@@ -139,7 +139,7 @@ function Resolve-ModuleSource {
             . "$PSScriptRoot/Helpers/TestTools.ps1"
             $VerbosePreference = 'Continue'
             $moduleToTest = Resolve-ModuleSource
-            # Outputs: "Using module at: /path/to/AtlassianPS.Standards/AtlassianPS.Standards.psd1"
+            # Outputs: "Using module at: /path/to/AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1"
         }
 
     .NOTES
@@ -163,10 +163,10 @@ function Resolve-ModuleSource {
         $projectRoot = (Resolve-Path "$projectRoot/Release").Path
     }
 
-    $moduleManifest = Join-Path $projectRoot "AtlassianPS.Standards/AtlassianPS.Standards.psd1"
+    $moduleManifest = Join-Path $projectRoot "AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1"
 
     if (-not (Test-Path $moduleManifest)) {
-        throw "Could not find AtlassianPS.Standards module at: $moduleManifest"
+        throw "Could not find AtlassianPSVII.Standards module at: $moduleManifest"
     }
 
     Write-Verbose "Using module at: $moduleManifest"
@@ -177,10 +177,10 @@ function Resolve-ModuleSource {
 function Resolve-ProjectRoot {
     <#
     .SYNOPSIS
-        Resolves the root directory of the AtlassianPS.Standards project.
+        Resolves the root directory of the AtlassianPSVII.Standards project.
 
     .DESCRIPTION
-        This helper function locates the AtlassianPS.Standards project root directory by walking
+        This helper function locates the AtlassianPSVII.Standards project root directory by walking
         up the directory tree from the caller's location until it finds a directory
         containing the CODEOWNERS file (the project root marker).
 
@@ -227,7 +227,7 @@ function Initialize-ToolScriptHarness {
 
     .DESCRIPTION
         Copies a tool script from the repository into a fresh TestDrive harness
-        folder and writes a test-specific AtlassianPS.Standards module source
+        folder and writes a test-specific AtlassianPSVII.Standards module source
         file, so tests can validate script wiring and error behavior without
         mutating repository files.
 
@@ -237,7 +237,7 @@ function Initialize-ToolScriptHarness {
 
     .PARAMETER ModuleContent
         Module source content to write to
-        AtlassianPS.Standards/AtlassianPS.Standards.psm1 in the harness.
+        AtlassianPSVII.Standards/AtlassianPSVII.Standards.psm1 in the harness.
 
     .OUTPUTS
         [PSCustomObject] with Root, ScriptPath, and ModuleSourcePath.
@@ -262,13 +262,13 @@ function Initialize-ToolScriptHarness {
 
     $harnessRoot = Join-Path -Path $TestDrive -ChildPath ([System.Guid]::NewGuid().ToString())
     $toolsPath = Join-Path -Path $harnessRoot -ChildPath 'Tools'
-    $modulePath = Join-Path -Path $harnessRoot -ChildPath 'AtlassianPS.Standards'
+    $modulePath = Join-Path -Path $harnessRoot -ChildPath 'AtlassianPSVII.Standards'
 
     $null = New-Item -Path $toolsPath -ItemType Directory -Force
     $null = New-Item -Path $modulePath -ItemType Directory -Force
 
     $scriptPath = Join-Path -Path $toolsPath -ChildPath (Split-Path -Path $sourceScriptPath -Leaf)
-    $moduleSourcePath = Join-Path -Path $modulePath -ChildPath 'AtlassianPS.Standards.psm1'
+    $moduleSourcePath = Join-Path -Path $modulePath -ChildPath 'AtlassianPSVII.Standards.psm1'
 
     Set-Content -LiteralPath $scriptPath -Value (Get-Content -LiteralPath $sourceScriptPath -Raw)
     Set-Content -LiteralPath $moduleSourcePath -Value $ModuleContent
@@ -313,7 +313,7 @@ function Write-MockDebugInfo {
 
     .EXAMPLE
         # Basic usage in a mock
-        Mock Get-JiraFilter -ModuleName AtlassianPS.Standards {
+        Mock Get-JiraFilter -ModuleName AtlassianPSVII.Standards {
             Write-MockDebugInfo 'Get-JiraFilter' 'Id', 'Name'
             return @{ Id = $Id; Name = $Name }
         }
@@ -326,7 +326,7 @@ function Write-MockDebugInfo {
 
     .EXAMPLE
         # In Invoke-JiraMethod mock
-        Mock Invoke-JiraMethod -ModuleName AtlassianPS.Standards {
+        Mock Invoke-JiraMethod -ModuleName AtlassianPSVII.Standards {
             Write-MockDebugInfo 'Invoke-JiraMethod' 'Method', 'Uri', 'Body'
             # ... mock implementation
         }

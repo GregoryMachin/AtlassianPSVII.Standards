@@ -1,11 +1,11 @@
 # Downstream Adoption
 
-Use this guide when moving a JiraPS-style module repository onto shared `AtlassianPS.Standards` primitives.
+Use this guide when moving a JiraPSVII-style module repository onto shared `AtlassianPSVII.Standards` primitives.
 
 ## Migration Order
 
 1. Release a Standards version that contains the helper needed by the downstream repository.
-2. Bump the downstream repository's `AtlassianPS.Standards` requirement to that released version.
+2. Bump the downstream repository's `AtlassianPSVII.Standards` requirement to that released version.
 3. Replace local helper implementations with calls to Standards helpers.
 4. Keep product-specific setup, provisioning, and fixtures in the product repository.
 5. Run the downstream repository's local build, package dry-run, and integration checks.
@@ -16,12 +16,12 @@ Do not wire a downstream repository to unreleased Standards helpers.
 
 | Local pattern | Replace with | Notes |
 |---------------|--------------|-------|
-| Build artifact copy | `Copy-AtlassianPSModuleArtifacts` | Keep task orchestration in the repository build script. |
-| Module source compilation | `Join-AtlassianPSModuleSource` | Keep the `CompileModule` task local and readable. |
-| Manifest export update | `Update-AtlassianPSModuleManifestExports` | Keep the `UpdateManifest` task local and readable. |
-| Local publish dry-run checks | `New-AtlassianPSModulePackage`, `Test-AtlassianPSModulePackage` | Keep package creation and validation as visible steps. |
-| Local `.env` parser | `Import-AtlassianPSDotEnvFile` | The helper emits names only, not secret values. |
-| Local test module import/cache bootstrap | `Initialize-AtlassianPSModuleTestEnvironment` | Keep product-specific test fixtures local. |
+| Build artifact copy | `Copy-AtlassianPSVIIModuleArtifacts` | Keep task orchestration in the repository build script. |
+| Module source compilation | `Join-AtlassianPSVIIModuleSource` | Keep the `CompileModule` task local and readable. |
+| Manifest export update | `Update-AtlassianPSVIIModuleManifestExports` | Keep the `UpdateManifest` task local and readable. |
+| Local publish dry-run checks | `New-AtlassianPSVIIModulePackage`, `Test-AtlassianPSVIIModulePackage` | Keep package creation and validation as visible steps. |
+| Local `.env` parser | `Import-AtlassianPSVIIDotEnvFile` | The helper emits names only, not secret values. |
+| Local test module import/cache bootstrap | `Initialize-AtlassianPSVIIModuleTestEnvironment` | Keep product-specific test fixtures local. |
 
 ## Keep Local
 
@@ -39,13 +39,13 @@ Keep behavior local when it knows product semantics or test fixture details.
 Tiny local assertion modules such as `Tools/BuildTools.psm1` should usually be removed during adoption rather than standardized.
 Use direct `throw` statements or Standards validation helpers where possible.
 
-## JiraPS Adoption Checklist
+## JiraPSVII Adoption Checklist
 
-1. Bump `AtlassianPS.Standards` in `Tools/build.requirements.psd1` after the Standards release.
-2. Replace duplicated build task internals with `Copy-AtlassianPSModuleArtifacts`, `Join-AtlassianPSModuleSource`, and `Update-AtlassianPSModuleManifestExports`, while keeping task dependencies explicit.
-3. Replace publish dry-run internals with `New-AtlassianPSModulePackage` followed by `Test-AtlassianPSModulePackage`.
-4. Replace generic portions of `Tests/Helpers/TestTools.ps1` with `Initialize-AtlassianPSModuleTestEnvironment`, `Resolve-AtlassianPSModuleSource`, and `Resolve-AtlassianPSProjectRoot` only if the result is simpler than the local helper.
-5. Keep Jira-specific helpers in `Tests/Helpers/IntegrationTestTools.ps1`, but replace only its `.env` parser with `Import-AtlassianPSDotEnvFile` if doing so reduces code.
+1. Bump `AtlassianPSVII.Standards` in `Tools/build.requirements.psd1` after the Standards release.
+2. Replace duplicated build task internals with `Copy-AtlassianPSVIIModuleArtifacts`, `Join-AtlassianPSVIIModuleSource`, and `Update-AtlassianPSVIIModuleManifestExports`, while keeping task dependencies explicit.
+3. Replace publish dry-run internals with `New-AtlassianPSVIIModulePackage` followed by `Test-AtlassianPSVIIModulePackage`.
+4. Replace generic portions of `Tests/Helpers/TestTools.ps1` with `Initialize-AtlassianPSVIIModuleTestEnvironment`, `Resolve-AtlassianPSVIIModuleSource`, and `Resolve-AtlassianPSVIIProjectRoot` only if the result is simpler than the local helper.
+5. Keep Jira-specific helpers in `Tests/Helpers/IntegrationTestTools.ps1`, but replace only its `.env` parser with `Import-AtlassianPSVIIDotEnvFile` if doing so reduces code.
 6. Keep `Tests/Invoke-ParallelPester.ps1` and `Tools/Wait-JiraServer.ps1` local.
 7. Run `Invoke-Build -Task Build, Test`.
 8. Run `Invoke-Build -Task Clean, TestPublish`.

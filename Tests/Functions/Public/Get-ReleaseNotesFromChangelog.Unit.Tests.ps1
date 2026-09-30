@@ -21,7 +21,7 @@ Describe 'Get-ReleaseNotesFromChangelog' {
 - Previous release.
 '@
 
-        $notes = InModuleScope AtlassianPS.Standards -Parameters @{ ChangelogPath = $changelogPath } {
+        $notes = InModuleScope AtlassianPSVII.Standards -Parameters @{ ChangelogPath = $changelogPath } {
             param($ChangelogPath)
 
             Get-ReleaseNotesFromChangelog -ChangelogPath $ChangelogPath -ReleaseVersion 'v1.2.3'
@@ -45,7 +45,7 @@ This is the release summary.
 Older release.
 '@
 
-        $notes = InModuleScope AtlassianPS.Standards -Parameters @{ ChangelogPath = $changelogPath } {
+        $notes = InModuleScope AtlassianPSVII.Standards -Parameters @{ ChangelogPath = $changelogPath } {
             param($ChangelogPath)
 
             Get-ReleaseNotesFromChangelog -ChangelogPath $ChangelogPath -ReleaseVersion '3.0.0'
@@ -66,7 +66,7 @@ Older release.
 - Older release.
 '@
 
-        InModuleScope AtlassianPS.Standards -Parameters @{ ChangelogPath = $changelogPath } {
+        InModuleScope AtlassianPSVII.Standards -Parameters @{ ChangelogPath = $changelogPath } {
             param($ChangelogPath)
 
             { Get-ReleaseNotesFromChangelog -ChangelogPath $ChangelogPath -ReleaseVersion '1.2.3' } |

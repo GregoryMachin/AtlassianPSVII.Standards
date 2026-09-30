@@ -4,7 +4,7 @@
 
 ## v0.2.0 - 2026-09-17
 
-- Declared the source manifest's `FunctionsToExport` explicitly instead of `'*'` (Phase 9 Task 58), and made `Tests/Project.Tests.ps1`'s existing "exports only the intentional public command surface" test read its expected list from that manifest instead of a separately hardcoded array, so the manifest itself is now the single committed compatibility baseline: an unreviewed addition or removal of an exported command fails the test, and updating the manifest is the explicit approval step for an intentional change. Module behavior is unchanged, since `AtlassianPS.Standards.psm1` already restricted runtime exports to `Public/*.ps1` via `Export-ModuleMember`; only the source manifest's own declared surface was still an unrestricted wildcard.
+- Declared the source manifest's `FunctionsToExport` explicitly instead of `'*'` (Phase 9 Task 58), and made `Tests/Project.Tests.ps1`'s existing "exports only the intentional public command surface" test read its expected list from that manifest instead of a separately hardcoded array, so the manifest itself is now the single committed compatibility baseline: an unreviewed addition or removal of an exported command fails the test, and updating the manifest is the explicit approval step for an intentional change. Module behavior is unchanged, since `AtlassianPSVII.Standards.psm1` already restricted runtime exports to `Public/*.ps1` via `Export-ModuleMember`; only the source manifest's own declared surface was still an unrestricted wildcard.
 - Added reproducible release archives, SHA-256 checksums, dependency/source provenance, GitHub artifact attestations, and exact CI-tested artifact promotion.
 - Added shared API operation-inventory validation, redacted response-header assertions, sunset failure thresholds, and deterministic scheduled-canary result formatting.
 - Added a local downstream compatibility runner that tests a candidate Standards artifact against the four product repositories without publishing, changing dependency pins, or forwarding secret environment variables.
@@ -26,7 +26,7 @@
 ## v0.1.11
 
 - Added a shared `resolve-release-tag` GitHub Action for downstream release workflows to validate annotated release tags and expose release metadata without duplicating shell logic.
-- Added `Get-AtlassianPSReleaseNotesFromChangelog` so downstream release builds can reuse one changelog parser for PSGallery manifest release notes.
+- Added `Get-AtlassianPSVIIReleaseNotesFromChangelog` so downstream release builds can reuse one changelog parser for PSGallery manifest release notes.
 - Added a shared `build-release-notes` GitHub Action so release workflows can create GitHub release bodies from the same changelog parser without copying PowerShell plumbing.
 
 ## v0.1.10
@@ -50,7 +50,7 @@
 
 ## v0.1.1
 
-- First public PowerShell Gallery release of `AtlassianPS.Standards`.
+- First public PowerShell Gallery release of `AtlassianPSVII.Standards`.
 - Added shared build/lint/test orchestration helpers.
 - Added shared ScriptAnalyzer settings sync helper.
 - Hardened module-join path safety and deterministic source merge behavior.
