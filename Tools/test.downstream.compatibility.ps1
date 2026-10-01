@@ -156,7 +156,8 @@ function Get-DownstreamStandardsVersion {
         [String]$RequirementsPath
     )
 
-    $requirements = @(Import-PowerShellDataFile -LiteralPath $RequirementsPath)
+    # Parse the array-style requirements file: Import-PowerShellDataFile returns only its first entry.
+    $requirements = @([System.Management.Automation.Language.Parser]::ParseFile($RequirementsPath, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].Expression.SafeGetValue())
     $standardsRequirements = @(
         $requirements |
             Where-Object { $_.ModuleName -eq 'AtlassianPSVII.Standards' }

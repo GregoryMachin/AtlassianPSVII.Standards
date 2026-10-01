@@ -6,7 +6,8 @@ BeforeAll {
     $buildRequirementsPath = Join-Path -Path $projectRoot -ChildPath 'Tools/build.requirements.psd1'
 
     $script:manifestData = Import-PowerShellDataFile -Path $manifestPath
-    $buildRequirements = @(Import-PowerShellDataFile -Path $buildRequirementsPath)
+    # Parse the array-style requirements file: Import-PowerShellDataFile returns only its first entry.
+    $buildRequirements = @([System.Management.Automation.Language.Parser]::ParseFile($buildRequirementsPath, [ref]$null, [ref]$null).EndBlock.Statements[0].PipelineElements[0].Expression.SafeGetValue())
     $manifestRequirements = @($script:manifestData.RequiredModules)
 
     $script:manifestRequirementNames = @(
