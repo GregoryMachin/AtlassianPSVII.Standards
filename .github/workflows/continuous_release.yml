@@ -168,7 +168,16 @@ jobs:
           release-version: ${{ steps.release_ref.outputs.release_tag }}
           module-path: ./AtlassianPSVII.Standards/AtlassianPSVII.Standards.psd1
 
+      - name: Check for PowerShell Gallery credentials
+        # The fork publishes to GitHub releases; the Gallery is optional (set PSGALLERY_API_KEY to enable).
+        id: gallery
+        env:
+          HAS_GALLERY_KEY: ${{ secrets.PSGALLERY_API_KEY != '' }}
+        shell: bash
+        run: echo "publish=$HAS_GALLERY_KEY" >> "$GITHUB_OUTPUT"
+
       - name: Publish tested module artifact
+        if: steps.gallery.outputs.publish == 'true'
         run: Publish-Module -Path ./Publish/AtlassianPSVII.Standards -NuGetApiKey ${{ secrets.PSGALLERY_API_KEY }} -ErrorAction Stop
         shell: pwsh
 
