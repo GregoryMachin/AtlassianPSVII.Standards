@@ -2,7 +2,7 @@
     RootModule           = 'AtlassianPSVII.Standards.psm1'
     ModuleVersion        = '1.0.0'
     GUID                 = '4453c019-c7cb-4a8f-8074-a21380db71f3'
-    Author               = 'AtlassianPSVII'
+    Author               = 'Gregory Machin'
     CompanyName          = 'AtlassianPSVII'
     Copyright            = '(c) 2026 AtlassianPS; (c) 2026 Gregory Machin. MIT License.'
     Description          = 'Shared analyzer settings and standards utilities for AtlassianPSVII modules.'
